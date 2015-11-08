@@ -1,0 +1,65 @@
+<html>
+<head>
+<link href="//cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap-responsive.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap-responsive.min.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="//cdn.bootcss.com/jquery/1.9.1/jquery.js"></script>
+<script src="//cdn.bootcss.com/jquery/1.9.1/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/bootstrap/2.3.2/js/bootstrap.js"></script>
+<script src="//cdn.bootcss.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+<title> {% block title %}LJCMS{% endblock %} - power by clj</title>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row-fluid">
+		<div class="span12">
+			<h3 class="text-center">
+				欢迎使用LJCMS运维管理系统
+			</h3>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div class="span2">
+			<ul class="nav nav-list">
+				<li class="nav-header">
+					LJCMS
+				</li>
+				<li class="active">
+					<a href="{% url 'server' %}">基础信息</a>
+				</li>
+				<li>
+					<a href="#">配置管理</a>
+				</li>
+				<li>
+					<a href="#">监控</a>
+				</li>
+				<li class="divider">
+				</li>
+				<li>
+					<a href="#">帮助</a>
+				</li>
+			</ul>
+		</div>
+		<div class="span6">
+		{% block nav %}{% endblock %}
+		</div>
+		<div class="span4">
+			<h2>
+				<span>提示</span>
+			</h2>
+			<p>
+				如何如何操作
+			</p>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div class="span12">
+			<p class="text-center">
+				Power By clj.
+			</p>
+		</div>
+	</div>
+</div>
+</body>
+</html>

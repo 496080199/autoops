@@ -1,0 +1,85 @@
+{% extends 'infra.html' %}
+{% block hardware_act %}class="active"{% endblock%}
+{% block content %}
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							编号
+						</th>
+						<th>
+							服务器IP
+						</th>
+						<th>
+							服务器产品型号
+						</th>
+						<th>
+							服务器CPU
+						</th>
+						<th>
+							服务器CPU核数
+						</th>
+						<th>
+							硬盘分区
+						</th>
+						<th>
+							分区大小
+						</th>
+						<th>
+							内存大小
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for hardware in hardware_list %}
+				
+					<tr>
+						<td>
+							{{hardware.id}}
+						</td>
+						<td>
+							{{hardware.h_server.s_ip}}
+						</td>
+						<td>
+							{{hardware.h_type}}
+						</td>
+						<td>
+							{{hardware.h_cpu}}
+						</td>
+						<td>
+							{{hardware.h_core}}
+						</td>
+						<td>
+							{{hardware.h_diskmodel}}
+						</td>
+						<td>
+							{{hardware.h_disktotal}}
+						</td>
+						<td>
+							{{hardware.h_mem}}
+						</td>
+						<td>
+							 <button class="btn btn-primary btn-mini" type="button">更新</button>
+						</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+			<div class="pagination pagination-centered pagination-small">
+				<ul>
+				{% if hardware_list.has_previous %}
+					<li>
+						<a href="?page={{hardware_list.previous_page_number}}">上一页</a>
+					</li>
+				{% endif %}
+					<li>
+						<a href="#">第{{hardware_list.number}}页 总共{{hardware_list.paginator.num_pages}}页</a>
+					</li>
+				{% if hardware_list.has_next %}
+					<li>
+						<a href="?page={{hardware_list.next_page_number}}">下一页</a>
+					</li>
+				{% endif %}
+				</ul>
+			</div>
+{% endblock%}				
