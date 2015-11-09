@@ -19,7 +19,7 @@ class Server(models.Model):
     s_user=models.CharField("服务器用户名",max_length=20)
     s_password=models.CharField("服务器密码",max_length=50)
     s_port=models.IntegerField("服务器SSH端口")
-    s_status=models.CharField("服务器连接状态",max_length=30,null=True)
+    s_status=models.CharField("服务器连接状态",max_length=255,null=True)
     def __unicode__(self):
         return self.s_name
     class Meta:

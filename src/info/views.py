@@ -89,6 +89,49 @@ def server_edit(request,ip):
         form=ServerForm(request.POST,instance=server_now)
         if form.is_valid():
             form.save()
+            
+            server_now=Server.objects.get(s_ip=form['s_ip'].value())
+            fp=open("/tmp/host",'w')
+            fp.write(server_now.s_ip)
+            fp.close()
+            import ansible.runner
+            runner=ansible.runner.Runner(
+                host_list="/tmp/host",
+                remote_user=server_now.s_user,
+                remote_pass=server_now.s_password,
+                remote_port=server_now.s_port,
+                module_name='setup',
+                module_args='',
+            )
+            data=runner.run()
+            if data['contacted']!={}:
+                ob=data['contacted'][server_now.s_ip]['ansible_facts']
+                server_now.hardware_set.h_type=ob['ansible_product_name']
+                if ob['ansible_machine']=='x86_64' or ob['ansible_machine']=='x86':
+                    server_now.hardware_set.h_cpu=ob['ansible_processor'][1]
+                else:
+                    server_now.hardware_set.h_cpu=ob['ansible_processor'][0]
+                server_now.hardware_set.h_core=ob['ansible_processor_cores']
+                server_now.hardware_set.h_diskmodel=''
+                server_now.hardware_set.h_disktotal=''
+                for mount in ob['ansible_mounts']:
+                    server_now.hardware_set.h_diskmodel+=str(mount['mount'])+'\r\n'
+                    size_total=float(mount['size_total'])/1024/1024/1024
+                    server_now.hardware_set.h_disktotal+=str(float('%0.3f'%size_total))+'GB\r\n'
+                server_now.hardware_set.h_mem=str(ob['ansible_memtotal_mb'])+'MB'
+
+                server_now.software_set.so_servername=ob['ansible_distribution']
+                server_now.software_set.so_serverrel=ob['ansible_distribution_version']
+                server_now.software_set.so_kernel=ob['ansible_kernel']
+                server_now.software_set.so_python=ob['ansible_python_version']
+
+                server_now.s_status="OK"
+            else:
+                server_now.s_status=data['dark'][server_now.s_ip]['msg']
+            
+            server_now.hardware_set.save()
+            server_now.software_set.save()
+            server_now.save()
             return HttpResponseRedirect('/') 
     else:
         form=ServerForm(instance=server_now)
