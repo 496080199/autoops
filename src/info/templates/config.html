@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block config_act %}class="active"{% endblock%}
+{% block nav %}
+<ul class="nav nav-pills">
+				<li {% block configedit_act %}{% endblock%}>
+					<a href="{% url 'configure' %}">配置编写</a>
+				</li>
+				<li {% block configaction_act %}{% endblock%}>
+					<a href="#">配置执行</a>
+				</li>
+				<li {% block configgroupaction_act %}{% endblock%}>
+					<a href="#">批量执行</a>
+				</li>
+			</ul> 
+{% block content %}
+{% endblock%}	
+{% endblock %}			

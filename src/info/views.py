@@ -246,11 +246,11 @@ def configure_upload(request):
 def handle_upload(f):
     import os,time
     try:
-        path=MEDIA_ROOT+"/yaml/"
+        path=MEDIA_ROOT+"/yml/"
         if not os.path.exists(path):
             os.makedirs(path)
         file_name=f.name.split('.')[0]
-        file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yaml'
+        file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
         dst=open(file_path,'wb+')
         for chunk in f.chunks():
             dst.write(chunk)
@@ -258,7 +258,34 @@ def handle_upload(f):
     except Exception,e:
         print e
     return file_name,file_path
+def configure_new(request):
+    if request.method=="POST":
+        form=ConfigureNewForm(request.POST)   
+        if form.is_valid():
+            import os,time
+            conf=Configure()
+            file_name=form['con_name'].value()
+            path=MEDIA_ROOT+"/yml/"
+            if not os.path.exists(path):
+                os.makedirs(path)
+            file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
+            dst=open(file_path,'wb+')
+            dst.close()
+            conf.con_name=file_name
+            conf.con_path=file_path
+            conf.save()
+            return HttpResponseRedirect('/configure/') 
+            
+    else:
+        form=ConfigureNewForm()
+    return render_to_response('configure_new.html',{'form':form,}) 
+
 def configure_del(request,id):
+    import os
     configure_now=Configure.objects.get(id=id)
+    try:
+        os.remove(configure_now.con_path)
+    except Exception,e:
+        print e
     configure_now.delete()
     return HttpResponseRedirect('/configure/') 

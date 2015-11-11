@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^software/$','info.views.software',name='software'),
     url(r'^configure/$','info.views.configure',name='configure'),
     url(r'^configure_upload/$','info.views.configure_upload',name='configure_upload'),
+    url(r'^configure_new/$','info.views.configure_new',name='configure_new'),
     url(r'^configure_del/([0-9]+)$','info.views.configure_del',name='configure_del'),
     url(r'^admin/', include(admin.site.urls)),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT) 

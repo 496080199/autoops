@@ -74,13 +74,16 @@ class ConfigureForm(ModelForm):
     con_file=forms.FileField()
     def clean_con_file(self):
         name_suffix=self.cleaned_data["con_file"].name.split('.')[1]
-        if name_suffix != 'yaml':
-            raise forms.ValidationError("请上传一个yaml格式文件")
+        if name_suffix != 'yml':
+            raise forms.ValidationError("请上传一个yml格式文件")
         return self.cleaned_data["con_file"]
     class Meta:
         model=Configure
         exclude='con_name','con_time','con_path',
-
+class ConfigureNewForm(ModelForm):
+    class Meta:
+        model=Configure
+        exclude='con_time','con_path',
     
     
     

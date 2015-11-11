@@ -1,0 +1,14 @@
+{% extends 'config.html' %}
+{% block configedit_act %}class="active"{% endblock%}
+{% block content %}
+<form method="POST" action="{% url 'configure_new' %}">
+				<fieldset>
+					 <legend>新建配置</legend>
+					 <label>请输入配置名称:</label> 
+					 {{form.con_name}}{{form.con_name.errors}}
+					 <br>
+					 <button type="submit" class="btn btn-primary">提交</button>
+					 <button type="button" class="btn" onclick="location='{% url 'configure' %}' ">返回</button>
+				</fieldset>
+			</form>
+{% endblock%}				
