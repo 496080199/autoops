@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.conf.urls.static import static  
+from django.conf import settings
 
 urlpatterns = [
     url(r'^$','info.views.server',name='server'),
@@ -27,5 +29,9 @@ urlpatterns = [
     url(r'^group_del/([0-9]+)$','info.views.group_del',name='group_del'),
     url(r'^hardware/$','info.views.hardware',name='hardware'),
     url(r'^software/$','info.views.software',name='software'),
+    url(r'^configure/$','info.views.configure',name='configure'),
+    url(r'^configure_upload/$','info.views.configure_upload',name='configure_upload'),
+    url(r'^configure_del/([0-9]+)$','info.views.configure_del',name='configure_del'),
     url(r'^admin/', include(admin.site.urls)),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT) 
+

@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
 from django.http import HttpResponse
 from django.shortcuts import render, render_to_response
-from info.models import Server,Group, Hardware, Software
+from info.models import *
 from info.models import ServerForm,GroupForm
 from django.http.response import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from ljcms.settings import MEDIA_ROOT
 
 # Create your views here.
 #def index(request):
@@ -211,3 +213,52 @@ def software(request):
         software_list=paginator.page(paginator.num_pages)
     context={'software_list':software_list}
     return render_to_response('software.html', context, context_instance=RequestContext(request))
+
+def configure(request):
+    configures=Configure.objects.all()
+    page_size=10
+    paginator=Paginator(configures,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        configure_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        configure_list=paginator.page(paginator.num_pages)
+    context={'configure_list':configure_list}
+    return render_to_response('configure.html',context, context_instance=RequestContext(request))
+def configure_upload(request):
+    if request.method=='POST':
+        form=ConfigureForm(request.POST,request.FILES)
+        if form.is_valid():
+            #import time
+            conf=Configure()
+            #conf.con_name=request.FILES['con_file'].name.split('.')[0]+time.strftime('_%Y%m%d%H%M%S')
+            conf.con_name,conf.con_path=handle_upload(request.FILES['con_file'])
+            conf.save()
+            #return HttpResponse(request.FILES)
+            return HttpResponseRedirect('/configure/') 
+    else:
+        form=ConfigureForm()
+    return render_to_response('configure_upload.html',{'form':form,}) 
+    
+def handle_upload(f):
+    import os,time
+    try:
+        path=MEDIA_ROOT+"/yaml/"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        file_name=f.name.split('.')[0]
+        file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yaml'
+        dst=open(file_path,'wb+')
+        for chunk in f.chunks():
+            dst.write(chunk)
+        dst.close()
+    except Exception,e:
+        print e
+    return file_name,file_path
+def configure_del(request,id):
+    configure_now=Configure.objects.get(id=id)
+    configure_now.delete()
+    return HttpResponseRedirect('/configure/') 

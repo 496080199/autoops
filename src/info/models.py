@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django import forms
 from django.db.models.fields.related import OneToOneField
 from django.forms.models import ModelForm, ModelMultipleChoiceField
 from django.forms.widgets import CheckboxSelectMultiple
@@ -64,53 +65,22 @@ class GroupForm(ModelForm):
         exclude='',
         
 class Configure(models.Model):
-    con_name=models.CharField("配置名称",max_length=50)
+    con_name=models.CharField("配置名称",max_length=200)
+    con_time=models.DateTimeField(auto_now=True)
+    con_path=models.CharField("文件路径",max_length=100)
     class Meta:
         db_table="configure"
-class File(models.Model):
-    f_name=models.CharField("文件名",max_length=50)
-    f_time=models.DateTimeField("上传时间",auto_now=True)
-    f_file=models.FileField("文件",upload_to='./conf/')
-    f_configure=models.ForeignKey(Configure)
+class ConfigureForm(ModelForm):
+    con_file=forms.FileField()
+    def clean_con_file(self):
+        name_suffix=self.cleaned_data["con_file"].name.split('.')[1]
+        if name_suffix != 'yaml':
+            raise forms.ValidationError("请上传一个yaml格式文件")
+        return self.cleaned_data["con_file"]
     class Meta:
-        db_table="file"
-class Parameter(models.Model):
-    p_name=models.CharField("参数名称",max_length=50)
-    p_value=models.CharField("参数值",max_length=50)
-    p_configure=models.ForeignKey(Configure)
-    class Meta:
-        db_table="parameter"
-class Handler(models.Model):
-    h_name=models.CharField("处理块名",max_length=50)
-    h_service=models.CharField("服务名",max_length=50)
-    h_staus=models.CharField("服务状态",max_length=50)
-    h_configure=models.ForeignKey(Configure)
-    class Meta:
-        db_table="handler"
-class Task(models.Model):
-    t_name=models.CharField("任务名称",max_length=50)
-    t_configure=models.ForeignKey(Configure)
-    class Meta:
-        db_table="task"
-class Mod(models.Model):
-    m_name=models.CharField("模块名称",max_length=50)
-    m_task=models.ForeignKey(Task)
-    class Meta:
-        db_table="mod"
-class Yum(models.Model):
-    yum_name=models.CharField("yum名称",max_length=50)
-    yum_state=models.CharField("yum状态",max_length=50)
-    yum_mod=models.ForeignKey(Mod)
-    class Meta:
-        db_table="yum"
-    
-    
-    
-    
-    
-    
-    
-    
+        model=Configure
+        exclude='con_name','con_time','con_path',
+
     
     
     
