@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'info',
+    'ckeditor',
 
 )
 
@@ -105,6 +106,17 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 MEDIA_ROOT=os.path.join( BASE_DIR , 'media').replace('\\','/')
+
 MEDIA_URL = '/media/'
 
+STATIC_ROOT=os.path.join( BASE_DIR , 'static').replace('\\','/')
 STATIC_URL = '/static/'
+
+CKEDITOR_UPLOAD_PATH=MEDIA_ROOT
+
+CKEDITOR_JQUERY_URL = '//cdn.bootcss.com/jquery/2.1.1/jquery.min.js'
+CKEDITOR_CONFIGS = {
+    "default": {
+        "removePlugins": "stylesheetparser",
+    }
+}

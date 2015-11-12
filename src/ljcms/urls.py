@@ -32,7 +32,10 @@ urlpatterns = [
     url(r'^configure/$','info.views.configure',name='configure'),
     url(r'^configure_upload/$','info.views.configure_upload',name='configure_upload'),
     url(r'^configure_new/$','info.views.configure_new',name='configure_new'),
+    url(r'^configure_copy/([0-9]+)$','info.views.configure_copy',name='configure_copy'),
+    url(r'^configure_edit/([0-9]+)$','info.views.configure_edit',name='configure_edit'),
     url(r'^configure_del/([0-9]+)$','info.views.configure_del',name='configure_del'),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT) 
 

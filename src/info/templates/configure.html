@@ -35,10 +35,12 @@
 							{{configure.con_time|date:"Y-m-d H:i:s"}}
 						</td>
 						<td>
-							{{configure.con_path}}
+							{{configure.con_path|truncatechars:"20"}}<a href="{{down_path}}{{configure.con_path|cut:upload_path}}" >下载</a>
 						</td>
 						<td>
-							<button class="btn btn-primary btn-mini" type="button">编辑</button><button class="btn btn-primary btn-mini" type="button" onclick="location='/configure_del/{{configure.id}}'">删除</button>
+							<button class="btn btn-primary btn-mini" type="button" onclick="location='/configure_edit/{{configure.id}}'">编辑</button>
+							<button class="btn btn-primary btn-mini" type="button" onclick="location='/configure_copy/{{configure.id}}'">复制</button>
+							<button class="btn btn-primary btn-mini" type="button" onclick="location='/configure_del/{{configure.id}}'">删除</button>
 						</td>
 					</tr>
 				{% endfor %}

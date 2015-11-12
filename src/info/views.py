@@ -6,7 +6,7 @@ from info.models import ServerForm,GroupForm
 from django.http.response import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from ljcms.settings import MEDIA_ROOT
+from ljcms.settings import MEDIA_ROOT, MEDIA_URL
 
 # Create your views here.
 #def index(request):
@@ -226,7 +226,9 @@ def configure(request):
         configure_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         configure_list=paginator.page(paginator.num_pages)
-    context={'configure_list':configure_list}
+    down_path=MEDIA_URL
+    upload_path=MEDIA_ROOT+'/'
+    context={'configure_list':configure_list,'down_path':down_path,'upload_path':upload_path}
     return render_to_response('configure.html',context, context_instance=RequestContext(request))
 def configure_upload(request):
     if request.method=='POST':
@@ -279,6 +281,45 @@ def configure_new(request):
     else:
         form=ConfigureNewForm()
     return render_to_response('configure_new.html',{'form':form,}) 
+def configure_copy(request,id):
+    conf=Configure.objects.get(id=id)
+    if request.method=='POST':
+        import os,time,shutil
+        form=ConfigureNewForm(request.POST)
+        if form.is_valid():
+            conf_now=Configure()
+            file_name=form['con_name'].value()
+            path=MEDIA_ROOT+"/yml/"
+            if not os.path.exists(path):
+                os.makedirs(path)
+            file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
+            shutil.copy(conf.con_path,file_path)
+            conf_now.con_name=file_name
+            conf_now.con_path=file_path
+            conf_now.save()
+            return HttpResponseRedirect('/configure/') 
+    else:
+        form=ConfigureNewForm(instance=conf)
+    return render_to_response('configure_copy.html',{'form':form,'id':id,})
+def configure_edit(request,id):
+    conf=Configure.objects.get(id=id)
+    if request.method=='POST':
+        form=ConfigureEditForm(request.POST)
+        if form.is_valid():
+            try:
+                con_file=open(conf.con_path,'w')
+                con_file.write(form['con_filecontent'].value().encode("utf8"))
+                con_file.close()
+                return HttpResponseRedirect('/configure/')
+            except IOError as e:
+                print e
+                
+    else:
+        conf_file=open(conf.con_path,'rt')
+        content=conf_file.read().decode("utf8")
+        form=ConfigureEditForm({'con_filecontent':content,'con_name':conf.con_name})
+        conf_file.close()
+    return render_to_response('configure_edit.html',{'form':form,'id':id,})
 
 def configure_del(request,id):
     import os

@@ -84,6 +84,12 @@ class ConfigureNewForm(ModelForm):
     class Meta:
         model=Configure
         exclude='con_time','con_path',
+from ckeditor.fields import RichTextFormField
+class ConfigureEditForm(ModelForm):
+    con_filecontent=RichTextFormField()
+    class Meta:
+        model=Configure
+        exclude='con_time','con_path'
     
     
     
