@@ -67,7 +67,10 @@ class GroupForm(ModelForm):
 class Configure(models.Model):
     con_name=models.CharField("配置名称",max_length=200)
     con_time=models.DateTimeField(auto_now=True)
-    con_path=models.CharField("文件路径",max_length=100)
+    con_path=models.CharField("配置路径",max_length=100)
+    con_status=models.CharField("配置状态",max_length=255,null=True)
+    def __unicode__(self):
+        return self.con_name
     class Meta:
         db_table="configure"
 class ConfigureForm(ModelForm):
@@ -89,7 +92,7 @@ class ConfigureEditForm(ModelForm):
     con_filecontent=RichTextFormField()
     class Meta:
         model=Configure
-        exclude='con_time','con_path'
+        exclude='con_time','con_path',
     
     
     

@@ -18,6 +18,9 @@
 							文件
 						</th>
 						<th>
+							配置状态
+						</th>
+						<th>
 							操作
 						</th>
 					</tr>
@@ -36,6 +39,9 @@
 						</td>
 						<td>
 							{{configure.con_path|truncatechars:"20"}}<a href="{{down_path}}{{configure.con_path|cut:upload_path}}" >下载</a>
+						</td>
+						<td>
+							{{configure.con_status}}
 						</td>
 						<td>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/configure_edit/{{configure.id}}'">编辑</button>
