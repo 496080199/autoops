@@ -41,6 +41,7 @@ def server_add(request):
             software=Software(so_server=server_now,so_servername='-',so_serverrel='-',so_kernel='-',so_python='-')
             hardware.save()
             software.save()
+            copy_sshkey(form['s_ip'].value())
             server_infoupdate(form['s_ip'].value())
             
             return HttpResponseRedirect('/')        
@@ -53,6 +54,7 @@ def server_edit(request,ip):
         form=ServerForm(request.POST,instance=server_now)
         if form.is_valid():
             form.save()
+            copy_sshkey(form['s_ip'].value())
             server_infoupdate(form['s_ip'].value())
             return HttpResponseRedirect('/') 
     else:
@@ -75,35 +77,55 @@ def server_infoupdate(ip):
     data=runner.run()
     if data['contacted']!={}:
         ob=data['contacted'][server_now.s_ip]['ansible_facts']
-        server_now.hardware_set.h_type=ob['ansible_product_name']
+        server_now.hardware.h_type=ob['ansible_product_name']
         if ob['ansible_machine']=='x86_64' or ob['ansible_machine']=='x86':
-            server_now.hardware_set.h_cpu=ob['ansible_processor'][1]
+            server_now.hardware.h_cpu=ob['ansible_processor'][1]
         else:
-            server_now.hardware_set.h_cpu=ob['ansible_processor'][0]
-        server_now.hardware_set.h_core=ob['ansible_processor_cores']
-        server_now.hardware_set.h_diskmodel=''
-        server_now.hardware_set.h_disktotal=''
+            server_now.hardware.h_cpu=ob['ansible_processor'][0]
+        server_now.hardware.h_core=ob['ansible_processor_cores']
+        server_now.hardware.h_diskmodel=''
+        server_now.hardware.h_disktotal=''
         for mount in ob['ansible_mounts']:
-            server_now.hardware_set.h_diskmodel+=str(mount['mount'])+'\r\n'
+            server_now.hardware.h_diskmodel+=str(mount['mount'])+'\r\n'
             size_total=float(mount['size_total'])/1024/1024/1024
-            server_now.hardware_set.h_disktotal+=str(float('%0.3f'%size_total))+'GB\r\n'
-        server_now.hardware_set.h_mem=str(ob['ansible_memtotal_mb'])+'MB'
-        server_now.software_set.so_servername=ob['ansible_distribution']
-        server_now.software_set.so_serverrel=ob['ansible_distribution_version']
-        server_now.software_set.so_kernel=ob['ansible_kernel']
-        server_now.software_set.so_python=ob['ansible_python_version']
+            server_now.hardware.h_disktotal+=str(float('%0.3f'%size_total))+'GB\r\n'
+        server_now.hardware.h_mem=str(ob['ansible_memtotal_mb'])+'MB'
+        server_now.software.so_servername=ob['ansible_distribution']
+        server_now.software.so_serverrel=ob['ansible_distribution_version']
+        server_now.software.so_kernel=ob['ansible_kernel']
+        server_now.software.so_python=ob['ansible_python_version']
         server_now.s_status="OK"
     else:
         server_now.s_status=data['dark'][server_now.s_ip]['msg']
             
-    server_now.hardware_set.save()
-    server_now.software_set.save()
+    server_now.hardware.save()
+    server_now.software.save()
     server_now.save()
     return
 def server_del(request,ip):
     server_now=Server.objects.get(s_ip=ip)
     server_now.delete()
     return HttpResponseRedirect('/') 
+def copy_sshkey(ip):
+    import paramiko,os
+    server=Server.objects.get(s_ip=ip)
+    sshkey_path=os.path.expanduser('~/.ssh/id_rsa.pub')
+    if not os.path.exists(sshkey_path):
+        HttpResponse("请到服务器上生成公钥，路径为：~/.ssh/id_rsa.pub")
+    ssh_key=open(sshkey_path,'r').read()
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(server.s_ip, username=server.s_user, password=server.s_password,timeout=10)
+        client.exec_command('mkdir -p ~/.ssh/')
+        client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % ssh_key)
+        client.exec_command('chmod 644 ~/.ssh/authorized_keys')
+        client.exec_command('chmod 700 ~/.ssh/')
+    except Exception,e:
+        print e
+    client.close()
+    return ssh_key
+ 
     
 def group(request):
     groups=Group.objects.all()
