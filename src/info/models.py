@@ -4,10 +4,11 @@ from django import forms
 from django.db.models.fields.related import OneToOneField
 from django.forms.models import ModelForm, ModelMultipleChoiceField
 from django.forms.widgets import CheckboxSelectMultiple
+from ckeditor.fields import RichTextFormField
 
 # Create your models here.
 class Group(models.Model):
-    g_name=models.CharField("服务器组名",max_length=50)
+    g_name=models.CharField("服务器组名",max_length=50,unique=True)
     g_desc=models.CharField("服务器组组描述",max_length=50)
     def __unicode__(self):
         return self.g_name
@@ -60,41 +61,46 @@ class ServerForm(ModelForm):
         model=Server
         exclude='s_status',
 class GroupForm(ModelForm):
+    def clean_g_name(self):
+        name=self.cleaned_data['g_name']
+        for i in name.split():
+            if not i.isalpha():
+                raise forms.ValidationError("必须全输入为英文")
+        return name
     class Meta:
         model=Group
         exclude='',
         
-class Configure(models.Model):
-    con_name=models.CharField("配置名称",max_length=200)
-    con_time=models.DateTimeField(auto_now=True)
-    con_path=models.CharField("配置路径",max_length=100)
-    con_status=models.CharField("配置状态",max_length=255,null=True)
+class ServerConfigure(models.Model):
+    ser_name=models.CharField("配置名称",max_length=200,unique=True)
+    ser_time=models.DateTimeField(auto_now=True)
+    ser_path=models.CharField("配置路径",max_length=100)
+    ser_status=models.CharField("配置状态",max_length=255,null=True)
+    ser_server=models.ForeignKey(Server)
     def __unicode__(self):
-        return self.con_name
+        return self.ser_name
     class Meta:
-        db_table="configure"
-class ConfigureForm(ModelForm):
-    con_file=forms.FileField()
-    def clean_con_file(self):
-        name_suffix=self.cleaned_data["con_file"].name.split('.')[1]
-        if name_suffix != 'yml':
-            raise forms.ValidationError("请上传一个yml格式文件")
-        return self.cleaned_data["con_file"]
+        db_table="server_configure"
+        
+class ServerConfigureForm(ModelForm):
     class Meta:
-        model=Configure
-        exclude='con_name','con_time','con_path',
-class ConfigureNewForm(ModelForm):
+        model=ServerConfigure
+        fields=['ser_name']
+class ServerConfigureEditForm(ModelForm):
+    ser_filecontent=RichTextFormField()
     class Meta:
-        model=Configure
-        exclude='con_time','con_path',
-from ckeditor.fields import RichTextFormField
-class ConfigureEditForm(ModelForm):
-    con_filecontent=RichTextFormField()
+        model=ServerConfigure
+        fields=['ser_filecontent']
+        
+class GroupConfigure(models.Model):
+    gro_name=models.CharField("配置名称",max_length=200)
+    gro_time=models.DateTimeField(auto_now=True)
+    gro_path=models.CharField("配置路径",max_length=100)
+    gro_status=models.CharField("配置状态",max_length=255,null=True)
+    gro_group=models.ForeignKey(Group)
+    def __unicode__(self):
+        return self.gro_name
     class Meta:
-        model=Configure
-        exclude='con_time','con_path',
-    
-    
-    
-    
-    
+        db_table="group_configure"
+        
+

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8 
 from django.http import HttpResponse
 from django.shortcuts import render, render_to_response
 from info.models import *
@@ -7,6 +7,7 @@ from django.http.response import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from ljcms.settings import MEDIA_ROOT, MEDIA_URL
+import os,time
 
 # Create your views here.
 #def index(request):
@@ -198,137 +199,107 @@ def software(request):
     context={'software_list':software_list}
     return render_to_response('software.html', context, context_instance=RequestContext(request))
 
-def configure(request):
-    configures=Configure.objects.all()
+def server_configure(request):
+    servers=Server.objects.all()
     page_size=10
-    paginator=Paginator(configures,page_size)
+    paginator=Paginator(servers,page_size)
     try:
         page=int(request.GET.get('page','1'))
     except ValueError:
         page=1
     try:
-        configure_list=paginator.page(page)
+        server_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
-        configure_list=paginator.page(paginator.num_pages)
+        server_list=paginator.page(paginator.num_pages)
+    context={'server_list':server_list}
+    return render_to_response('server_configure.html',context, context_instance=RequestContext(request))
+
+def server_configure_manage(request,id):
+    server=Server.objects.get(id=id)
+    server_configures=server.serverconfigure_set.all()
+    page_size=10
+    paginator=Paginator(server_configures,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        server_configure_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        server_configure_list=paginator.page(paginator.num_pages)
     down_path=MEDIA_URL
     upload_path=MEDIA_ROOT+'/'
-    context={'configure_list':configure_list,'down_path':down_path,'upload_path':upload_path}
-    return render_to_response('configure.html',context, context_instance=RequestContext(request))
-def configure_upload(request):
-    if request.method=='POST':
-        form=ConfigureForm(request.POST,request.FILES)
-        if form.is_valid():
-            #import time
-            conf=Configure()
-            #conf.con_name=request.FILES['con_file'].name.split('.')[0]+time.strftime('_%Y%m%d%H%M%S')
-            conf.con_name,conf.con_path=handle_upload(request.FILES['con_file'])
-            conf.save()
-            configure_change(conf.id)
-            #return HttpResponse(conf.id)
-            return HttpResponseRedirect('/configure/') 
-    else:
-        form=ConfigureForm()
-    return render_to_response('configure_upload.html',{'form':form,}) 
-    
-def handle_upload(f):
-    import os,time
-    try:
-        path=MEDIA_ROOT+"/yml/"
-        if not os.path.exists(path):
-            os.makedirs(path)
-        file_name=f.name.split('.')[0]
-        file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
-        dst=open(file_path,'wb+')
-        for chunk in f.chunks():
-            dst.write(chunk)
-        dst.close()
-    except Exception,e:
-        print e
-    return file_name,file_path
-def configure_new(request):
+    context={'server_configure_list':server_configure_list,'server':server,'down_path':down_path,'upload_path':upload_path}
+    return render_to_response('server_configure_manage.html',context, context_instance=RequestContext(request))
+
+def server_configure_new(request,id):
+    server=Server.objects.get(id=id)
     if request.method=="POST":
-        form=ConfigureNewForm(request.POST)   
+        form=ServerConfigureForm(request.POST)   
         if form.is_valid():
-            import os,time
-            conf=Configure()
-            file_name=form['con_name'].value()
-            path=MEDIA_ROOT+"/yml/"
+            serconf=ServerConfigure()
+            file_name=form['ser_name'].value()
+            path=MEDIA_ROOT+"/yml/server/"
             if not os.path.exists(path):
                 os.makedirs(path)
             file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
             dst=open(file_path,'wt')
-            dst.write('---\n- hosts: _host_\n')
+            line='---\n- hosts: '+server.s_ip+'\n  #hosts automatic generated,not change\n'
+            dst.write(line)
             dst.close()
-            conf.con_name=file_name
-            conf.con_path=file_path
-            conf.save()
-            configure_change(conf.id)
-            return HttpResponseRedirect('/configure/') 
+            serconf.ser_name=file_name
+            serconf.ser_path=file_path
+            server.serverconfigure_set.add(serconf)
+            serconf.save()
+            server_configure_change(serconf.id)
+            return HttpResponseRedirect('/server_configure_manage/'+str(server.id)) 
             
     else:
-        form=ConfigureNewForm()
-    return render_to_response('configure_new.html',{'form':form,}) 
-def configure_copy(request,id):
-    conf=Configure.objects.get(id=id)
+        form=ServerConfigureForm()
+    return render_to_response('server_configure_new.html',{'form':form,'server':server}) 
+
+def server_configure_edit(request,id):
+    serconf=ServerConfigure.objects.get(id=id)
+    server_id=str(serconf.ser_server.id)
     if request.method=='POST':
-        import os,time,shutil
-        form=ConfigureNewForm(request.POST)
-        if form.is_valid():
-            conf_now=Configure()
-            file_name=form['con_name'].value()
-            path=MEDIA_ROOT+"/yml/"
-            if not os.path.exists(path):
-                os.makedirs(path)
-            file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
-            shutil.copy(conf.con_path,file_path)
-            conf_now.con_name=file_name
-            conf_now.con_path=file_path
-            conf_now.save()
-            configure_change(conf_now.id)
-            return HttpResponseRedirect('/configure/') 
-    else:
-        form=ConfigureNewForm(instance=conf)
-    return render_to_response('configure_copy.html',{'form':form,'id':id,})
-def configure_edit(request,id):
-    conf=Configure.objects.get(id=id)
-    if request.method=='POST':
-        form=ConfigureEditForm(request.POST)
+        form=ServerConfigureEditForm(request.POST)
         if form.is_valid():
             try:
-                con_file=open(conf.con_path,'w')
-                con_file.write(form['con_filecontent'].value().encode("utf8"))
-                con_file.close()
-                conf.save()
-                configure_change(conf.id)
-                return HttpResponseRedirect('/configure/')
+                sercon_file=open(serconf.ser_path,'w')
+                sercon_file.write(form['ser_filecontent'].value().encode("utf8"))
+                sercon_file.close()
+                serconf.save()
+                server_configure_change(serconf.id)
+                return HttpResponseRedirect('/server_configure_manage/'+server_id)
             except IOError as e:
                 print e
                 
     else:
-        conf_file=open(conf.con_path,'rt')
-        content=conf_file.read().decode("utf8")
-        form=ConfigureEditForm({'con_filecontent':content,'con_name':conf.con_name})
-        conf_file.close()
-    return render_to_response('configure_edit.html',{'form':form,'id':id,})
+        serconf_file=open(serconf.ser_path,'rt')
+        content=serconf_file.read().decode("utf8")
+        form=ServerConfigureEditForm({'ser_filecontent':content})
+        serconf_file.close()
+    return render_to_response('server_configure_edit.html',{'form':form,'serconf_ser_name':serconf.ser_name,'id':id,'server_id':server_id,})
 
-def configure_del(request,id):
-    import os
-    configure_now=Configure.objects.get(id=id)
+def server_configure_del(request,id):
+    serconf=ServerConfigure.objects.get(id=id)
+    server_id=str(serconf.ser_server.id)
     try:
-        os.remove(configure_now.con_path)
+        os.remove(serconf.ser_path)
     except Exception,e:
         print e
-    configure_now.delete()
-    return HttpResponseRedirect('/configure/') 
-def configure_change(id):
-    conf=Configure.objects.get(id=id)
+    serconf.delete()
+    return HttpResponseRedirect('/server_configure_manage/'+server_id)
+
+def server_configure_change(id):
+    serconf=ServerConfigure.objects.get(id=id)
     import commands
-    result=commands.getstatusoutput('ansible-playbook --syntax-check '+conf.con_path)
+    result=commands.getstatusoutput('ansible-playbook --syntax-check '+serconf.ser_path)
     if result[0]!=0:
-        conf.con_status=result[1]
-        conf.save()
-        return conf.id
-    conf.con_status='OK'
-    conf.save()
-    return conf.id
+        serconf.ser_status=result[1]
+        serconf.save()
+        return serconf.id
+    serconf.ser_status='OK'
+    serconf.save()
+    return serconf.id
     

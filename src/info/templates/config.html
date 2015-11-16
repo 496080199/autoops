@@ -3,13 +3,13 @@
 {% block nav %}
 <ul class="nav nav-pills">
 				<li {% block configedit_act %}{% endblock%}>
-					<a href="{% url 'configure' %}">配置编写</a>
+					<a href="{% url 'server_configure' %}">服务器配置</a>
 				</li>
 				<li {% block configaction_act %}{% endblock%}>
-					<a href="#">配置执行</a>
+					<a href="#">服务器组配置</a>
 				</li>
 				<li {% block configgroupaction_act %}{% endblock%}>
-					<a href="#">批量执行</a>
+					<a href="#">配置使用文件</a>
 				</li>
 			</ul> 
 {% block content %}
