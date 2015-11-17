@@ -9,7 +9,7 @@
 					<a href="{% url 'group_configure' %}">服务器组配置</a>
 				</li>
 				<li {% block configgroupaction_act %}{% endblock%}>
-					<a href="#">配置使用文件</a>
+					<a href="{% url 'filelist' %}">配置使用文件</a>
 				</li>
 			</ul> 
 {% block content %}

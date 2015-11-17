@@ -5,6 +5,9 @@ from django.db.models.fields.related import OneToOneField
 from django.forms.models import ModelForm, ModelMultipleChoiceField
 from django.forms.widgets import CheckboxSelectMultiple
 from ckeditor.fields import RichTextFormField
+import os,chardet,random
+from django.http.response import HttpResponse
+from ljcms.settings import MEDIA_ROOT
 
 # Create your models here.
 class Group(models.Model):
@@ -63,10 +66,6 @@ class ServerForm(ModelForm):
 class GroupForm(ModelForm):
     def clean_g_name(self):
         name=self.cleaned_data['g_name']
-        #for i in name:
-        #    if not i.isalpha():
-        #        raise forms.ValidationError("必须全输入为英文")
-        #        return name
         for i in name:
             if i >=u'u4e00' and i <= u'\u9fa5':
                 raise forms.ValidationError("必须全输入为英文")
@@ -116,5 +115,24 @@ class GroupConfigureEditForm(ModelForm):
     class Meta:
         model=GroupConfigure
         fields=['gro_filecontent']
+        
+class File(models.Model):
+    f_path=models.CharField("文件路径",max_length=100)
+    def __unicode__(self):
+        return self.id
+    class Meta:
+        db_table="file"
+class FileForm(ModelForm):
+    f_file=forms.FileField()
+    class Meta:
+        model=File
+        fields=['f_file']
+class FileEditForm(ModelForm):
+    f_filecontent=RichTextFormField()
+    class Meta:
+        model=File
+        fields=['f_filecontent']
+    
+    
         
 

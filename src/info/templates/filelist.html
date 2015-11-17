@@ -1,0 +1,46 @@
+{% extends 'config.html' %}
+{% block configgroupaction_act %}class="active"{% endblock%}
+{% block content %}
+ <legend>文件列表<button class="btn btn-primary btn-mini" type="button" onclick="location='{% url 'file_upload' %}'">上传</button></legend>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							文件路径
+						</th>
+						<th>
+							操作
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for file in file_list %}
+					<tr class="success">
+						<td>
+							{{file.f_path}}
+						</td>
+						<td>
+							 <button class="btn btn-primary btn-mini" type="button" onclick="location='/file_edit/{{file.id}}'">编辑</button> <button class="btn btn-primary btn-mini" type="button" onclick="location='/file_del/{{file.id}}'">删除</button>
+						</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+			<div class="pagination pagination-centered pagination-small">
+				<ul>
+				{% if file_list.has_previous %}
+					<li>
+						<a href="?page={{file_list.previous_page_number}}">上一页</a>
+					</li>
+				{% endif %}
+					<li>
+						<a href="#">第{{file_list.number}}页 总共{{file_list.paginator.num_pages}}页</a>
+					</li>
+				{% if file_list.has_next %}
+					<li>
+						<a href="?page={{file_list.next_page_number}}">下一页</a>
+					</li>
+				{% endif %}
+				</ul>
+			</div>
+{% endblock %}

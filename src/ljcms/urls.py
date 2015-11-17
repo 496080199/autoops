@@ -39,6 +39,10 @@ urlpatterns = [
     url(r'^group_configure_new/([0-9]+)$','info.views.group_configure_new',name='group_configure_new'),
     url(r'^group_configure_edit/([0-9]+)$','info.views.group_configure_edit',name='group_configure_edit'),
     url(r'^group_configure_del/([0-9]+)$','info.views.group_configure_del',name='group_configure_del'),
+    url('^filelist/$','info.views.filelist',name='filelist'),
+    url('^file_upload/$','info.views.file_upload',name='file_upload'),
+    url('^file_edit/([0-9]+)$','info.views.file_edit',name='file_edit'),
+    url('^file_del/([0-9]+)$','info.views.file_del',name='file_del'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT) 

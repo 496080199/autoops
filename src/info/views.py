@@ -7,7 +7,7 @@ from django.http.response import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from ljcms.settings import MEDIA_ROOT, MEDIA_URL
-import os,time
+import os,time,random
 
 # Create your views here.
 #def index(request):
@@ -406,4 +406,75 @@ def group_configure_change(id):
     groconf.ser_status='OK'
     groconf.save()
     return groconf.id
-   
+def filelist(request):
+    files=File.objects.all()
+    page_size=10
+    paginator=Paginator(files,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        file_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        file_list=paginator.page(paginator.num_pages)
+    context={'file_list':file_list}
+    return render_to_response('filelist.html',context, context_instance=RequestContext(request))
+def file_upload(request):
+    if request.method=='POST':
+        form=FileForm(request.POST,request.FILES) 
+        if form.is_valid():
+            f=File()
+            f.f_path=handle_upload(request.FILES['f_file'])
+            f.save()
+            return HttpResponseRedirect('/filelist/') 
+    else:
+        form=FileForm()
+    return render_to_response('file_upload.html',{'form':form,}) 
+def handle_upload(f):
+    try:
+        path=MEDIA_ROOT+"/yml/file/"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        f_name=''.join(f.name.split('.')[0:-1])
+        f_prefix=f.name.split('.')[-1]
+        f_random=str(int(random.uniform(0.1,1)*1000000))
+        f_path=path+f_name+f_random+'.'+f_prefix
+        dst=open(f_path,'wb+')
+        for chunk in f.chunks():
+            dst.write(chunk)
+        dst.close()
+    except Exception,e:
+        print e
+    return f_path
+def file_edit(request,id):
+    f=File.objects.get(id=id)
+    if request.method=='POST':
+        form=FileEditForm(request.POST)
+        if form.is_valid():
+            try:
+                f_file=open(f.f_path,'w')
+                f_file.write(form['f_filecontent'].value().encode("utf8"))
+                f_file.close()
+                f.save()
+                return HttpResponseRedirect('/filelist/')
+            except IOError as e:
+                print e
+                
+    else:
+        path=MEDIA_ROOT+'/yml/file/'
+        f_path=f.f_path
+        f_file=open(f.f_path,'rt')
+        #return HttpResponse(f.f_path.encode('utf8'))
+        content=f_file.read()
+        form=FileEditForm({'f_filecontent':content})
+        f_file.close()
+    return render_to_response('file_edit.html',{'form':form,'id':id,'path':path,'f_path':f_path})
+def file_del(request,id):
+    f=File.objects.get(id=id)
+    try:
+        os.remove(f.f_path)
+    except Exception,e:
+        print e
+    f.delete()
+    return HttpResponseRedirect('/filelist/') 

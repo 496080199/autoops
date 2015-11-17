@@ -1,0 +1,16 @@
+{% extends 'config.html' %}
+{% block configgroupaction_act %}class="active"{% endblock%}
+{% block content %}
+			<form method="POST" action="/file_edit/{{id}}">
+				<fieldset>
+					 <legend>文件编辑</legend> 
+					 <label>文件名称</label>
+                     <label>{{f_path|cut:path}}</label>
+					 <label>文件内容</label>
+					 {{form.f_filecontent}}
+					 <br />
+					  <button type="submit" class="btn btn-primary">提交</button>
+                      <button type="button" class="btn" onclick="location='{% url 'filelist' %}'">返回</button>
+				</fieldset>
+			</form>
+{% endblock %}
