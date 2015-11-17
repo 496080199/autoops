@@ -1,0 +1,17 @@
+{% extends 'config.html' %}
+{% block configaction_act %}class="active"{% endblock%}
+{% block content %}
+<form method="POST" action="/group_configure_edit/{{id}}">
+				<fieldset>
+					 <legend>配置编辑</legend>
+					 <label>配置名称</label> 
+                     {{groconf_gro_name}}
+					 <br>
+					 <label>配置内容</label>
+					 {{form.gro_filecontent}}
+					 <br>
+					 <button type="submit" class="btn btn-primary">保存</button>
+					 <button type="button" class="btn" onclick="location='{% url 'group_configure_manage' group_id %}' ">返回</button>
+				</fieldset>
+			</form>
+{% endblock%}				

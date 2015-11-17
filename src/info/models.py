@@ -63,9 +63,14 @@ class ServerForm(ModelForm):
 class GroupForm(ModelForm):
     def clean_g_name(self):
         name=self.cleaned_data['g_name']
-        for i in name.split():
-            if not i.isalpha():
+        #for i in name:
+        #    if not i.isalpha():
+        #        raise forms.ValidationError("必须全输入为英文")
+        #        return name
+        for i in name:
+            if i >=u'u4e00' and i <= u'\u9fa5':
                 raise forms.ValidationError("必须全输入为英文")
+            
         return name
     class Meta:
         model=Group
@@ -102,5 +107,14 @@ class GroupConfigure(models.Model):
         return self.gro_name
     class Meta:
         db_table="group_configure"
+class GroupConfigureForm(ModelForm):
+    class Meta:
+        model=GroupConfigure
+        fields=['gro_name']
+class GroupConfigureEditForm(ModelForm):
+    gro_filecontent=RichTextFormField()
+    class Meta:
+        model=GroupConfigure
+        fields=['gro_filecontent']
         
 

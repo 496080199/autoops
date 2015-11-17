@@ -302,4 +302,108 @@ def server_configure_change(id):
     serconf.ser_status='OK'
     serconf.save()
     return serconf.id
-    
+
+def group_configure(request):
+    groups=Group.objects.all()
+    page_size=10
+    paginator=Paginator(groups,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        group_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        group_list=paginator.page(paginator.num_pages)
+    context={'group_list':group_list}
+    return render_to_response('group_configure.html',context, context_instance=RequestContext(request))
+
+def group_configure_manage(request,id):
+    group=Group.objects.get(id=id)
+    group_configures=group.groupconfigure_set.all()
+    page_size=10
+    paginator=Paginator(group_configures,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        group_configure_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        group_configure_list=paginator.page(paginator.num_pages)
+    down_path=MEDIA_URL
+    upload_path=MEDIA_ROOT+'/'
+    context={'group_configure_list':group_configure_list,'group':group,'down_path':down_path,'upload_path':upload_path}
+    return render_to_response('group_configure_manage.html',context, context_instance=RequestContext(request))
+
+def group_configure_new(request,id):
+    group=Group.objects.get(id=id)
+    if request.method=="POST":
+        form=GroupConfigureForm(request.POST)   
+        if form.is_valid():
+            groconf=GroupConfigure()
+            file_name=form['gro_name'].value()
+            path=MEDIA_ROOT+"/yml/group/"
+            if not os.path.exists(path):
+                os.makedirs(path)
+            file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
+            dst=open(file_path,'wt')
+            line='---\n- hosts: '+group.g_name+'\n  #hosts automatic generated,not change\n'
+            dst.write(line)
+            dst.close()
+            groconf.gro_name=file_name
+            groconf.gro_path=file_path
+            group.groupconfigure_set.add(groconf)
+            groconf.save()
+            group_configure_change(groconf.id)
+            return HttpResponseRedirect('/group_configure_manage/'+str(group.id)) 
+            
+    else:
+        form=GroupConfigureForm()
+    return render_to_response('group_configure_new.html',{'form':form,'group':group}) 
+
+def group_configure_edit(request,id):
+    groconf=GroupConfigure.objects.get(id=id)
+    group_id=str(groconf.gro_group.id)
+    if request.method=='POST':
+        form=GroupConfigureEditForm(request.POST)
+        if form.is_valid():
+            try:
+                grocon_file=open(groconf.gro_path,'w')
+                grocon_file.write(form['gro_filecontent'].value().encode("utf8"))
+                grocon_file.close()
+                groconf.save()
+                group_configure_change(groconf.id)
+                return HttpResponseRedirect('/group_configure_manage/'+group_id)
+            except IOError as e:
+                print e
+                
+    else:
+        groconf_file=open(groconf.gro_path,'rt')
+        content=groconf_file.read().decode("utf8")
+        form=GroupConfigureEditForm({'gro_filecontent':content})
+        groconf_file.close()
+    return render_to_response('group_configure_edit.html',{'form':form,'groconf_gro_name':groconf.gro_name,'id':id,'group_id':group_id,})
+
+def group_configure_del(request,id):
+    groconf=GroupConfigure.objects.get(id=id)
+    group_id=str(groconf.gro_group.id)
+    try:
+        os.remove(groconf.gro_path)
+    except Exception,e:
+        print e
+    groconf.delete()
+    return HttpResponseRedirect('/group_configure_manage/'+group_id)
+
+def group_configure_change(id):
+    groconf=GroupConfigure.objects.get(id=id)
+    import commands
+    result=commands.getstatusoutput('ansible-playbook --syntax-check '+groconf.gro_path)
+    if result[0]!=0:
+        groconf.gro_status=result[1]
+        groconf.save()
+        return groconf.id
+    groconf.ser_status='OK'
+    groconf.save()
+    return groconf.id
+   
