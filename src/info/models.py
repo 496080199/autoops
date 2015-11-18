@@ -95,6 +95,10 @@ class ServerConfigureEditForm(ModelForm):
     class Meta:
         model=ServerConfigure
         fields=['ser_filecontent']
+class ServerConfigureActionForm(ModelForm):
+    class Meta:
+        model=ServerConfigure
+        fields=['ser_name']
         
 class GroupConfigure(models.Model):
     gro_name=models.CharField("配置名称",max_length=200)
@@ -124,6 +128,15 @@ class File(models.Model):
         db_table="file"
 class FileForm(ModelForm):
     f_file=forms.FileField()
+    #def clean_f_file(self):
+    #    f_file=self.cleaned_data['f_file']
+    #    content=f_file.readline()
+     #   char=chardet.detect(content)
+    #    if char['encoding']=='ascii':
+    #        return f_file
+    #    raise forms.ValidationError("请上传utf8编码的文本类文件")
+    #    return f_file
+            
     class Meta:
         model=File
         fields=['f_file']

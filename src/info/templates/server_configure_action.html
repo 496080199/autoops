@@ -1,64 +1,12 @@
-<div class="container-fluid">
-	<div class="row-fluid">
-		<div class="span12">
-			<h3 class="text-center">
-				»¶Ó­Ê¹ÓÃLJCMSÔËÎ¬¹ÜÀíÏµÍ³
-			</h3>
-		</div>
-	</div>
-	<div class="row-fluid">
-		<div class="span2">
-			<ul class="nav nav-list">
-				<li class="nav-header">
-					ljcmsÏµÍ³
-				</li>
-				<li class="active">
-					<a href="#">»ù´¡ĞÅÏ¢</a>
-				</li>
-				<li>
-					<a href="#">ÅäÖÃ¹ÜÀí</a>
-				</li>
-				<li>
-					<a href="#">¼à¿Ø</a>
-				</li>
-				<li class="divider">
-				</li>
-				<li>
-					<a href="#">°ïÖú</a>
-				</li>
-			</ul>
-		</div>
-		<div class="span6">
-			<ul class="nav nav-pills">
-				<li class="active">
-					<a href="#">·şÎñÆ÷ÅäÖÃ</a>
-				</li>
-				<li>
-					<a href="#">·şÎñÆ÷×éÅäÖÃ</a>
-				</li>
-				<li>
-					<a href="#">ÅäÖÃÊ¹ÓÃÎÄ¼ş</a>
-				</li>
-			</ul><br /><br /><br /> <legend>ÌáÊ¾£º</legend>
-			<p>
-				ÄúÈ·¶¨ÒªÔÚ192.168.1.12ÉÏÖ´ĞĞdfdsÅäÖÃÂğ£¿
-			</p><br /><br /> <button class="btn btn-primary" type="button">È·¶¨</button> <button class="btn" type="button">·µ»Ø</button>
-		</div>
-		<div class="span4">
-			<h3>
-				<span>ÌáÊ¾</span>
-			</h3>
-			<p>
-				ÈçºÎÈçºÎ²Ù×÷
-			</p>
-			
-		</div>
-	</div>
-	<div class="row-fluid">
-		<div class="span12">
-			<p class="text-center">
-				Power By clj.
-			</p>
-		</div>
-	</div>
-</div>
+{% extends 'config.html' %}
+{% block configgroupaction_act %}class="active"{% endblock%}
+{% block content %}
+<br /><br /> 
+<legend>æç¤ºï¼š</legend>
+<form method="POST" action="/server_configure_action/{{id}}">
+<label>æ‚¨ç¡®å®šè¦åœ¨{{server_ip}}ä¸Šæ‰§è¡Œ({{form.ser_name.value}})çš„é…ç½®å—ï¼Ÿ</label>
+<br />
+<br />
+<button class="btn btn-primary" type="submit">ç¡®å®š</button> <button class="btn" type="button" onclick="location='{% url 'server_configure_manage' server_id %}' ">è¿”å›</button>
+</form>
+{% endblock %}

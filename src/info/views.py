@@ -7,6 +7,9 @@ from django.http.response import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from ljcms.settings import MEDIA_ROOT, MEDIA_URL
+from ansible.playbook import PlayBook
+from ansible import callbacks
+from ansible import utils
 import os,time,random
 
 # Create your views here.
@@ -291,6 +294,30 @@ def server_configure_del(request,id):
     serconf.delete()
     return HttpResponseRedirect('/server_configure_manage/'+server_id)
 
+def server_configure_action(request,id):
+    serconf=ServerConfigure.objects.get(id=id)
+    server_id=str(serconf.ser_server.id)
+    if request.method=='POST':
+        form=ServerConfigureEditForm(request.POST)
+        fp=open("/tmp/server",'w')
+        fp.write(serconf.ser_server.s_ip)
+        fp.close()
+        utils.VERBOSITY = 0
+        playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)
+        stats = callbacks.AggregateStats()
+        runner_cb = callbacks.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
+        pb=PlayBook(playbook=serconf.ser_path,host_list="/tmp/server",remote_port=serconf.ser_server.s_port,timeout=30,callbacks=playbook_cb,runner_callbacks=runner_cb,stats=stats)
+        results=pb.run()
+        r=results[str(serconf.ser_server.s_ip)]
+        action_result="执行失败,请检查您的playbook文件"
+        if r['ok'] > 0:
+            action_result="执行成功"
+        content={'action_result':action_result,'server_id':server_id}
+        return render_to_response('server_configure_result.html',content)
+    else:
+        form=ServerConfigureActionForm({'ser_name':serconf.ser_name})
+    return render_to_response('server_configure_action.html',{'form':form,'id':id,'server_ip':serconf.ser_server.s_ip,'server_id':server_id})
+
 def server_configure_change(id):
     serconf=ServerConfigure.objects.get(id=id)
     import commands
@@ -467,6 +494,9 @@ def file_edit(request,id):
         f_file=open(f.f_path,'rt')
         #return HttpResponse(f.f_path.encode('utf8'))
         content=f_file.read()
+        char=chardet.detect(content)
+        if char['encoding']!='ascii':
+            return render_to_response('file_unedit.html')
         form=FileEditForm({'f_filecontent':content})
         f_file.close()
     return render_to_response('file_edit.html',{'form':form,'id':id,'path':path,'f_path':f_path})
@@ -478,3 +508,4 @@ def file_del(request,id):
         print e
     f.delete()
     return HttpResponseRedirect('/filelist/') 
+

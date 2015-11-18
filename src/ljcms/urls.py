@@ -34,6 +34,7 @@ urlpatterns = [
     url(r'^server_configure_new/([0-9]+)$','info.views.server_configure_new',name='server_configure_new'),
     url(r'^server_configure_edit/([0-9]+)$','info.views.server_configure_edit',name='server_configure_edit'),
     url(r'^server_configure_del/([0-9]+)$','info.views.server_configure_del',name='server_configure_del'),
+    url(r'^server_configure_action/([0-9]+)$','info.views.server_configure_action',name='server_configure_action'),
     url(r'^group_configure/$','info.views.group_configure',name='group_configure'),
     url(r'^group_configure_manage/([0-9]+)$','info.views.group_configure_manage',name='group_configure_manage'),
     url(r'^group_configure_new/([0-9]+)$','info.views.group_configure_new',name='group_configure_new'),
