@@ -1,0 +1,12 @@
+{% extends 'config.html' %}
+{% block configaction_act %}class="active"{% endblock%}
+{% block content %}
+<br /><br /> 
+<legend>提示：</legend>
+<form method="POST" action="/group_configure_action/{{id}}">
+<label>您确定要在{{g_name}}上执行({{form.gro_name.value}})的配置吗？</label>
+<br />
+<br />
+<button class="btn btn-primary" type="submit">确定</button> <button class="btn" type="button" onclick="location='{% url 'group_configure_manage' group_id %}' ">返回</button>
+</form>
+{% endblock %}

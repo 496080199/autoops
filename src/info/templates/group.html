@@ -14,6 +14,9 @@
 						<th>
 							组描述
 						</th>
+						<th>
+							组成员
+						</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -27,6 +30,11 @@
 						</td>
 						<td>
 							{{group.g_desc}}
+						</td>
+						<td>
+							{% for server in group.server_set.all %}
+							{{server.s_ip}},
+							{% endfor %}
 						</td>
 						<td>
 							 <button class="btn btn-primary btn-mini" type="button" onclick="location='/group_edit/{{group.id}}'">更新</button> <button class="btn btn-primary btn-mini" type="button" onclick="location='/group_del/{{group.id}}'">删除</button>

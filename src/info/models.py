@@ -8,6 +8,7 @@ from ckeditor.fields import RichTextFormField
 import os,chardet,random
 from django.http.response import HttpResponse
 from ljcms.settings import MEDIA_ROOT
+from ckeditor import widgets
 
 # Create your models here.
 class Group(models.Model):
@@ -100,6 +101,23 @@ class ServerConfigureActionForm(ModelForm):
         model=ServerConfigure
         fields=['ser_name']
         
+class ServerConfigureTime(models.Model):
+    conf=OneToOneField(ServerConfigure)
+    ser_minute=models.CharField("分",default='*',max_length=100)
+    ser_hour=models.CharField("时",default='*',max_length=100)
+    ser_day=models.CharField("天",default='*',max_length=100)
+    ser_month=models.CharField("月",default='*',max_length=100)
+    ser_weekday=models.CharField("周",default='*',max_length=100)
+    ser_jobpath=models.CharField("任务路径",max_length=100)
+    ser_jobstatus=models.BooleanField("是否开启",default=False)
+    class Meta:
+        db_table="server_configure_time"
+class ServerConfigureTimeForm(ModelForm):
+    class Meta:
+        model=ServerConfigureTime
+        fields=['ser_minute','ser_hour','ser_day','ser_month','ser_weekday','ser_jobstatus']
+                                
+        
 class GroupConfigure(models.Model):
     gro_name=models.CharField("配置名称",max_length=200)
     gro_time=models.DateTimeField(auto_now=True)
@@ -119,6 +137,10 @@ class GroupConfigureEditForm(ModelForm):
     class Meta:
         model=GroupConfigure
         fields=['gro_filecontent']
+class GroupConfigureActionForm(ModelForm):
+    class Meta:
+        model=GroupConfigure
+        fields=['gro_name']
         
 class File(models.Model):
     f_path=models.CharField("文件路径",max_length=100)

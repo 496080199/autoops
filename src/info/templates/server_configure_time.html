@@ -1,0 +1,25 @@
+{% extends 'config.html' %}
+{% block configedit_act %}class="active"{% endblock%}
+{% block content %}
+<form method="POST" action="{% url 'server_configure_time' id %}">
+				<fieldset>
+					 <legend>定时任务</legend> 
+					 <label>任务名称</label>
+					 {{serconf_name}}
+					 <label>是否打开</label> 
+					 {{form.ser_jobstatus}}
+					 <label>分</label>
+					 {{form.ser_minute}}
+					 <label>时</label>
+					 {{form.ser_hour}}
+					 <label>天</label>
+					 {{form.ser_day}}
+					 <label>月</label>
+					 {{form.ser_month}}
+					 <label>周几</label>
+					 {{form.ser_weekday}}
+					 <br>
+					 <button type="submit" class="btn btn-primary">提交</button> <button type="button" class="btn" onclick="location='{% url 'server_configure_manage' server_id %}' ">返回</button>
+				</fieldset>
+			</form>
+{% endblock %}

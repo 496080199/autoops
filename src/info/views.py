@@ -7,10 +7,10 @@ from django.http.response import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from ljcms.settings import MEDIA_ROOT, MEDIA_URL
-from ansible.playbook import PlayBook
-from ansible import callbacks
-from ansible import utils
-import os,time,random
+#from ansible.playbook import PlayBook
+#from ansible import callbacks
+#from ansible import utils
+import os,time,random,stat,paramiko
 
 # Create your views here.
 #def index(request):
@@ -35,6 +35,8 @@ def server(request):
     return render_to_response('server.html', context, context_instance=RequestContext(request))
 
 def server_add(request):
+    server_inv_update()
+    group_inv_update()
     if request.method=='POST':
         form=ServerForm(request.POST)
         if form.is_valid():
@@ -47,12 +49,13 @@ def server_add(request):
             software.save()
             copy_sshkey(form['s_ip'].value())
             server_infoupdate(form['s_ip'].value())
-            
             return HttpResponseRedirect('/')        
     else:
         form=ServerForm()
     return render_to_response('server_add.html',{'form':form,})
 def server_edit(request,ip):
+    server_inv_update()
+    group_inv_update()
     server_now=Server.objects.get(s_ip=ip)
     if request.method=='POST':
         form=ServerForm(request.POST,instance=server_now)
@@ -66,12 +69,14 @@ def server_edit(request,ip):
     return render(request,'server_edit.html',{'form':form})
 def server_infoupdate(ip):
     server_now=Server.objects.get(s_ip=ip)
-    fp=open("/tmp/host",'w')
-    fp.write(server_now.s_ip)
-    fp.close()
+    #fp=open("/tmp/host",'w')
+    #fp.write(server_now.s_ip)
+    #fp.close()
+    path=MEDIA_ROOT+'/server_inv.py'
     import ansible.runner
     runner=ansible.runner.Runner(
-                                 host_list="/tmp/host",
+                                 host_list=path,
+                                 pattern=str(ip),
                                  remote_user=server_now.s_user,
                                  remote_pass=server_now.s_password,
                                  remote_port=server_now.s_port,
@@ -107,11 +112,12 @@ def server_infoupdate(ip):
     server_now.save()
     return
 def server_del(request,ip):
+    server_inv_update()
+    group_inv_update()
     server_now=Server.objects.get(s_ip=ip)
     server_now.delete()
     return HttpResponseRedirect('/') 
 def copy_sshkey(ip):
-    import paramiko,os
     server=Server.objects.get(s_ip=ip)
     sshkey_path=os.path.expanduser('~/.ssh/id_rsa.pub')
     if not os.path.exists(sshkey_path):
@@ -147,6 +153,7 @@ def group(request):
 
     return render(request,'group.html',{'group_list':group_list})
 def group_add(request):
+    group_inv_update()
     if request.method=='POST':
         form=GroupForm(request.POST)
         if form.is_valid():
@@ -156,6 +163,7 @@ def group_add(request):
         form=GroupForm()
     return render_to_response('group_add.html',{'form':form,}) 
 def group_edit(request,id):
+    group_inv_update()
     group_now=Group.objects.get(id=id)
     if request.method=='POST':
         form=GroupForm(request.POST,instance=group_now)
@@ -166,9 +174,44 @@ def group_edit(request,id):
         form=GroupForm(instance=group_now)
     return render_to_response('group_edit.html',{'form':form,'id':id,})
 def group_del(request,id):
+    group_inv_update()
     group_now=Group.objects.get(id=id)
     group_now.delete()
-    return HttpResponseRedirect('/group/')      
+    return HttpResponseRedirect('/group/')  
+
+def server_inv_update():
+    servers=Server.objects.all()
+    ips=[]
+    for server in servers:
+        ips.append(str(server.s_ip))
+    result='{"all":{"hosts":'+str(ips)+'}}'
+    path=MEDIA_ROOT+'/server_inv.py'
+    f=open(path,'w')
+    content='#!/usr/bin/env python\nimport json\n\nprint json.dumps('+result+')\n'
+    f.write(content)
+    f.close()
+    os.chmod(path,stat.S_IRWXU)
+    return
+        
+
+def group_inv_update():
+    groups=Group.objects.all()
+    result='{'
+    for group in groups:
+        ips=[]
+        for server in group.server_set.all():
+            ips.append(str(server.s_ip))
+        group_str='"'+ str(group.g_name)+'":{"hosts":'+str(ips)+'},'
+        result+=group_str
+    result+='}' 
+    path=MEDIA_ROOT+'/group_inv.py'
+    f=open(path,'w')
+    content='#!/usr/bin/env python\nimport json\n\nprint json.dumps('+result+')\n'
+    f.write(content)
+    f.close()
+    os.chmod(path,stat.S_IRWXU)
+    return
+   
 def hardware(request):
     hardwares=Hardware.objects.all()
     
@@ -241,6 +284,7 @@ def server_configure_new(request,id):
         form=ServerConfigureForm(request.POST)   
         if form.is_valid():
             serconf=ServerConfigure()
+            #serconf_time.serverconfigure.add(serconf)
             file_name=form['ser_name'].value()
             path=MEDIA_ROOT+"/yml/server/"
             if not os.path.exists(path):
@@ -254,6 +298,8 @@ def server_configure_new(request,id):
             serconf.ser_path=file_path
             server.serverconfigure_set.add(serconf)
             serconf.save()
+            serconf_time=ServerConfigureTime(conf=serconf)
+            serconf_time.save()
             server_configure_change(serconf.id)
             return HttpResponseRedirect('/server_configure_manage/'+str(server.id)) 
             
@@ -289,6 +335,7 @@ def server_configure_del(request,id):
     server_id=str(serconf.ser_server.id)
     try:
         os.remove(serconf.ser_path)
+        os.remove(serconf.serverconfiguretime.ser_jobpath)
     except Exception,e:
         print e
     serconf.delete()
@@ -299,24 +346,74 @@ def server_configure_action(request,id):
     server_id=str(serconf.ser_server.id)
     if request.method=='POST':
         form=ServerConfigureEditForm(request.POST)
-        fp=open("/tmp/server",'w')
-        fp.write(serconf.ser_server.s_ip)
-        fp.close()
-        utils.VERBOSITY = 0
-        playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)
-        stats = callbacks.AggregateStats()
-        runner_cb = callbacks.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
-        pb=PlayBook(playbook=serconf.ser_path,host_list="/tmp/server",remote_port=serconf.ser_server.s_port,timeout=30,callbacks=playbook_cb,runner_callbacks=runner_cb,stats=stats)
-        results=pb.run()
-        r=results[str(serconf.ser_server.s_ip)]
-        action_result="执行失败,请检查您的playbook文件"
-        if r['ok'] > 0:
-            action_result="执行成功"
+        path=MEDIA_ROOT+'/server_inv.py'
+        import commands
+        r=commands.getstatusoutput('ansible-playbook -i '+path+' '+serconf.ser_path)
+        #fp=open("/tmp/server",'w')
+        #fp.write(serconf.ser_server.s_ip)
+        #fp.close()
+        #utils.VERBOSITY = 0
+        #playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)
+        #stats = callbacks.AggregateStats()
+        #runner_cb = callbacks.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
+        #pb=PlayBook(playbook=serconf.ser_path,host_list=path,remote_port=serconf.ser_server.s_port,timeout=30,callbacks=playbook_cb,runner_callbacks=runner_cb,stats=stats)
+        #results=pb.run()
+        #r=results[str(serconf.ser_server.s_ip)]
+        action_result=r[1]
+        #if r['ok'] > 0:
+        #    action_result="执行成功"
         content={'action_result':action_result,'server_id':server_id}
         return render_to_response('server_configure_result.html',content)
     else:
         form=ServerConfigureActionForm({'ser_name':serconf.ser_name})
     return render_to_response('server_configure_action.html',{'form':form,'id':id,'server_ip':serconf.ser_server.s_ip,'server_id':server_id})
+def server_configure_time(request,id):
+    serconf=ServerConfigure.objects.get(id=id)
+    serconf_time=serconf.serverconfiguretime
+    server_id=str(serconf.ser_server.id)
+    if request.method=='POST':
+        form=ServerConfigureTimeForm(request.POST,instance=serconf_time)
+        if form.is_valid():
+            ser_shell=serconf_time.ser_jobpath
+            minute=form['ser_minute'].value()
+            hour=form['ser_hour'].value()
+            day=form['ser_day'].value()
+            month=form['ser_month'].value()
+            weekday=form['ser_weekday'].value()
+            serconf_time.ser_jobstatus=form['ser_jobstatus'].value()
+            if form['ser_jobstatus'].value()!=0: 
+                if ser_shell=='':
+                    inv_path=MEDIA_ROOT+'/server_inv.py'
+                    path=MEDIA_ROOT+'/yml/time/server/'
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    ser_shell=path+serconf.ser_name+time.strftime('_%Y%m%d%H%M%S')+'.sh'
+                    f=open(ser_shell,'w')
+                    content='#!/bin/sh\nansible-playbook -i '+inv_path+' '+serconf.ser_path
+                    f.write(content)
+                    f.close()
+                    os.chmod(ser_shell,stat.S_IRWXU)
+                import commands
+               
+                command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" minute="'+minute+'" hour="'+hour+'" day="'+day+'" month="'+month+'" weekday="'+weekday+'" job="'+ser_shell+'""'
+                commands.getstatusoutput(command)
+            else:
+                import commands
+                command='ansible "127.0.0.1" -m cron -a "name='+serconf.ser_name+' state=absent"'
+                commands.getstatusoutput(command)
+            serconf_time.ser_jobpath=ser_shell
+            serconf_time.ser_minute=minute
+            serconf_time.ser_hour=hour
+            serconf_time.ser_day=day
+            serconf_time.ser_month=month
+            serconf_time.ser_weekday=weekday
+            serconf_time.save()
+            return HttpResponseRedirect('/server_configure_manage/'+server_id)
+    else:
+        form=ServerConfigureTimeForm(instance=serconf.serverconfiguretime) 
+    return render_to_response('server_configure_time.html',{'form':form,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id})
+    
+    
 
 def server_configure_change(id):
     serconf=ServerConfigure.objects.get(id=id)
@@ -422,6 +519,41 @@ def group_configure_del(request,id):
     groconf.delete()
     return HttpResponseRedirect('/group_configure_manage/'+group_id)
 
+def group_configure_action(request,id):
+    groconf=GroupConfigure.objects.get(id=id)
+    group_id=str(groconf.gro_group.id)
+    if request.method=='POST':
+        form=GroupConfigureEditForm(request.POST)
+        path=MEDIA_ROOT+'/group_inv.py'
+        import commands
+        r=commands.getstatusoutput('ansible-playbook -i '+path+' '+groconf.gro_path)
+        action_result=r[1]
+        #if r['ok'] > 0:
+        #    action_result="执行成功"
+        #utils.VERBOSITY = 0
+        #playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)
+        #stats = callbacks.AggregateStats()
+        #runner_cb = callbacks.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
+        #pb=PlayBook(playbook=groconf.gro_path,host_list=path,timeout=30,callbacks=playbook_cb,runner_callbacks=runner_cb,stats=stats)
+        #results=pb.run()
+        #servers=groconf.gro_group.server_set.all()
+        #action_results=[]
+        #for server in servers:
+        #    if results[str(server.s_ip)]['ok'] > 0:
+        #        action_results.append(str(server.s_ip)+"执行成功")
+        #    else:
+        #        action_results.append(str(server.s_ip)+"执行失败，请检查您的playbook文件")
+        
+        #r=results[str(serconf.ser_server.s_ip)]
+        #action_result="执行失败,请检查您的playbook文件"
+        #if r['ok'] > 0:
+        #    action_result="执行成功"
+        content={'action_result':action_result,'gro_gname':groconf.gro_group.g_name,'group_id':group_id}
+        return render_to_response('group_configure_result.html',content)
+    else:
+        form=GroupConfigureActionForm({'gro_name':groconf.gro_name})
+    return render_to_response('group_configure_action.html',{'form':form,'id':id,'g_name':groconf.gro_group.g_name,'group_id':group_id})
+
 def group_configure_change(id):
     groconf=GroupConfigure.objects.get(id=id)
     import commands
@@ -430,7 +562,7 @@ def group_configure_change(id):
         groconf.gro_status=result[1]
         groconf.save()
         return groconf.id
-    groconf.ser_status='OK'
+    groconf.gro_status='OK'
     groconf.save()
     return groconf.id
 def filelist(request):
