@@ -4,20 +4,24 @@
 <form method="POST" action="{% url 'server_configure_time' id %}">
 				<fieldset>
 					 <legend>定时任务</legend> 
-					 <label>任务名称</label>
+					 <label>任务名称：</label>
 					 {{serconf_name}}
-					 <label>是否打开</label> 
+					 <label>是否开启：</label> 
 					 {{form.ser_jobstatus}}
-					 <label>分</label>
-					 {{form.ser_minute}}
-					 <label>时</label>
-					 {{form.ser_hour}}
-					 <label>天</label>
-					 {{form.ser_day}}
-					 <label>月</label>
-					 {{form.ser_month}}
-					 <label>周几</label>
-					 {{form.ser_weekday}}
+					 <span hidden>
+					 <label>是否闰年：</label>
+					 {{form.ser_leapyear}}
+					 </span>
+					 <label>分：</label>
+					 {{form.ser_minute}}{{form.ser_minute.errors}}
+					 <label>时：</label>
+					 {{form.ser_hour}}{{form.ser_hour.errors}}
+					 <label>天：</label>
+					 {{form.ser_day}}{{form.ser_day.errors}}
+					 <label>月：</label>
+					 {{form.ser_month}}{{form.ser_month.errors}}
+					 <label>周几：</label>
+					 {{form.ser_weekday}}{{form.ser_weekday.errors}}
 					 <br>
 					 <button type="submit" class="btn btn-primary">提交</button> <button type="button" class="btn" onclick="location='{% url 'server_configure_manage' server_id %}' ">返回</button>
 				</fieldset>

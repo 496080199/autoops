@@ -10,7 +10,7 @@ from ljcms.settings import MEDIA_ROOT, MEDIA_URL
 #from ansible.playbook import PlayBook
 #from ansible import callbacks
 #from ansible import utils
-import os,time,random,stat,paramiko
+import os,time,random,stat,paramiko,commands
 
 # Create your views here.
 #def index(request):
@@ -338,6 +338,8 @@ def server_configure_del(request,id):
         os.remove(serconf.serverconfiguretime.ser_jobpath)
     except Exception,e:
         print e
+    command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" state=absent"'
+    commands.getstatusoutput(command)
     serconf.delete()
     return HttpResponseRedirect('/server_configure_manage/'+server_id)
 
@@ -347,7 +349,6 @@ def server_configure_action(request,id):
     if request.method=='POST':
         form=ServerConfigureEditForm(request.POST)
         path=MEDIA_ROOT+'/server_inv.py'
-        import commands
         r=commands.getstatusoutput('ansible-playbook -i '+path+' '+serconf.ser_path)
         #fp=open("/tmp/server",'w')
         #fp.write(serconf.ser_server.s_ip)
@@ -393,13 +394,10 @@ def server_configure_time(request,id):
                     f.write(content)
                     f.close()
                     os.chmod(ser_shell,stat.S_IRWXU)
-                import commands
-               
                 command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" minute="'+minute+'" hour="'+hour+'" day="'+day+'" month="'+month+'" weekday="'+weekday+'" job="'+ser_shell+'""'
                 commands.getstatusoutput(command)
             else:
-                import commands
-                command='ansible "127.0.0.1" -m cron -a "name='+serconf.ser_name+' state=absent"'
+                command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" state=absent"'
                 commands.getstatusoutput(command)
             serconf_time.ser_jobpath=ser_shell
             serconf_time.ser_minute=minute
@@ -410,14 +408,18 @@ def server_configure_time(request,id):
             serconf_time.save()
             return HttpResponseRedirect('/server_configure_manage/'+server_id)
     else:
-        form=ServerConfigureTimeForm(instance=serconf.serverconfiguretime) 
+        year=int(time.strftime('%Y'))
+        serconf_time.ser_leapyear=False
+        if (year%4==0 and year%100!=0) or year%400==0:
+            serconf_time.ser_leapyear=True
+        serconf_time.save()
+        form=ServerConfigureTimeForm(instance=serconf.serverconfiguretime)
     return render_to_response('server_configure_time.html',{'form':form,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id})
     
     
 
 def server_configure_change(id):
     serconf=ServerConfigure.objects.get(id=id)
-    import commands
     result=commands.getstatusoutput('ansible-playbook --syntax-check '+serconf.ser_path)
     if result[0]!=0:
         serconf.ser_status=result[1]
@@ -525,7 +527,6 @@ def group_configure_action(request,id):
     if request.method=='POST':
         form=GroupConfigureEditForm(request.POST)
         path=MEDIA_ROOT+'/group_inv.py'
-        import commands
         r=commands.getstatusoutput('ansible-playbook -i '+path+' '+groconf.gro_path)
         action_result=r[1]
         #if r['ok'] > 0:
@@ -556,7 +557,6 @@ def group_configure_action(request,id):
 
 def group_configure_change(id):
     groconf=GroupConfigure.objects.get(id=id)
-    import commands
     result=commands.getstatusoutput('ansible-playbook --syntax-check '+groconf.gro_path)
     if result[0]!=0:
         groconf.gro_status=result[1]

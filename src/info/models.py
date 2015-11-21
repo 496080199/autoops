@@ -10,6 +10,7 @@ from django.http.response import HttpResponse
 from ljcms.settings import MEDIA_ROOT
 from ckeditor import widgets
 
+
 # Create your models here.
 class Group(models.Model):
     g_name=models.CharField("服务器组名",max_length=50,unique=True)
@@ -110,12 +111,78 @@ class ServerConfigureTime(models.Model):
     ser_weekday=models.CharField("周",default='*',max_length=100)
     ser_jobpath=models.CharField("任务路径",max_length=100)
     ser_jobstatus=models.BooleanField("是否开启",default=False)
+    ser_leapyear=models.BooleanField("是否闰年",default=False)
     class Meta:
         db_table="server_configure_time"
 class ServerConfigureTimeForm(ModelForm):
+    def clean_ser_minute(self):
+        minute=self.cleaned_data['ser_minute']
+        if minute=='*':
+            return minute
+        if minute.isdigit():
+            if int(minute)>=0 and int(minute)<=59:
+                return minute
+        raise forms.ValidationError("请输入一个有效值（0-59或*）")
+        return minute
+    def clean_ser_hour(self):
+        hour=self.cleaned_data['ser_hour']
+        if hour=='*':
+            return hour
+        if hour.isdigit():
+            if int(hour)>=0 and int(hour)<=23:
+                return hour
+        raise forms.ValidationError("请输入一个有效值（0-23或*）")
+        return hour
+    def clean_ser_day(self):
+        day=self.cleaned_data['ser_day']
+        month=self['ser_month'].value()
+        leapyear=self['ser_leapyear'].value()
+        if day=='*':
+            return day
+        if month=='*':
+            if day.isdigit():
+                if int(day)>=1 and int(day)<=31:
+                    return day
+        if month.isdigit():
+            if int(month) in [1,3,5,7,8,10,12]:
+                if day.isdigit():
+                    if int(day)>=1 and int(day)<=31:
+                        return day
+            elif int(month) in [4,6,9,12]:
+                if day.isdigit():
+                    if int(day)>=1 and int(day)<=30:
+                        return day
+            elif int(month)==2:
+                if day.isdigit():
+                    if leapyear==0:
+                        if int(day)>=1 and int(day)<=28:
+                            return day
+                    else:
+                        if int(day)>=1 and int(day)<=29:
+                            return day      
+        raise  forms.ValidationError("请输入一个有效值")   
+        return day
+    def clean_ser_month(self):
+        month=self.cleaned_data['ser_month']
+        if month=='*':
+            return month
+        if month.isdigit():
+            if int(month)>=1 and int(month)<=12:
+                return month
+        raise forms.ValidationError("请输入一个有效值（1-12或*）")
+        return month
+    def clean_ser_weekday(self):
+        weekday=self.cleaned_data['ser_weekday']
+        if weekday=='*':
+            return weekday 
+        if weekday.isdigit():
+            if int(weekday)>=1 and int(weekday)<=7:
+                return weekday
+        raise forms.ValidationError("请输入一个有效值（1-7或*）")
+        return weekday       
     class Meta:
         model=ServerConfigureTime
-        fields=['ser_minute','ser_hour','ser_day','ser_month','ser_weekday','ser_jobstatus']
+        fields=['ser_minute','ser_hour','ser_day','ser_month','ser_weekday','ser_jobstatus','ser_leapyear']
                                 
         
 class GroupConfigure(models.Model):
