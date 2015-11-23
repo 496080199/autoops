@@ -5,7 +5,7 @@ from django.db.models.fields.related import OneToOneField
 from django.forms.models import ModelForm, ModelMultipleChoiceField
 from django.forms.widgets import CheckboxSelectMultiple
 from ckeditor.fields import RichTextFormField
-import os,chardet,random
+import os,chardet,random,re
 from django.http.response import HttpResponse
 from ljcms.settings import MEDIA_ROOT
 from ckeditor import widgets
@@ -119,19 +119,47 @@ class ServerConfigureTimeForm(ModelForm):
         minute=self.cleaned_data['ser_minute']
         if minute=='*':
             return minute
+        if re.match(r'\*\/', minute):
+            re_minute=minute.split('/')
+            if len(re_minute)==2:
+                if re_minute[1].isdigit():
+                    return minute
+        if re.findall(r'\,',minute):
+            list1=minute.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(0,59):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return minute      
         if minute.isdigit():
             if int(minute)>=0 and int(minute)<=59:
                 return minute
-        raise forms.ValidationError("请输入一个有效值（0-59或*）")
+        raise forms.ValidationError("请输入一个有效值（参考crontab）")
         return minute
     def clean_ser_hour(self):
         hour=self.cleaned_data['ser_hour']
         if hour=='*':
             return hour
+        if re.match(r'\*\/', hour):
+            re_hour=hour.split('/')
+            if len(re_hour)==2:
+                if re_hour[1].isdigit():
+                    return hour
+        if re.findall(r'\,',hour):
+            list1=hour.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(0,23):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return hour
         if hour.isdigit():
             if int(hour)>=0 and int(hour)<=23:
                 return hour
-        raise forms.ValidationError("请输入一个有效值（0-23或*）")
+        raise forms.ValidationError("请输入一个有效值（参考crontab）")
         return hour
     def clean_ser_day(self):
         day=self.cleaned_data['ser_day']
@@ -143,6 +171,20 @@ class ServerConfigureTimeForm(ModelForm):
             if day.isdigit():
                 if int(day)>=1 and int(day)<=31:
                     return day
+        if re.match(r'\*\/', day):
+            re_day=day.split('/')
+            if len(re_day)==2:
+                if re_day[1].isdigit():
+                    return day
+        if re.findall(r'\,',day):
+            list1=day.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(1,31):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return day
         if month.isdigit():
             if int(month) in [1,3,5,7,8,10,12]:
                 if day.isdigit():
@@ -160,21 +202,49 @@ class ServerConfigureTimeForm(ModelForm):
                     else:
                         if int(day)>=1 and int(day)<=29:
                             return day      
-        raise  forms.ValidationError("请输入一个有效值")   
+        raise  forms.ValidationError("请输入一个有效值（参考crontab）")   
         return day
     def clean_ser_month(self):
         month=self.cleaned_data['ser_month']
         if month=='*':
             return month
+        if re.match(r'\*\/', month):
+            re_month=month.split('/')
+            if len(re_month)==2:
+                if re_month[1].isdigit():
+                    return month
+        if re.findall(r'\,',month):
+            list1=month.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(1,12):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return month
         if month.isdigit():
             if int(month)>=1 and int(month)<=12:
                 return month
-        raise forms.ValidationError("请输入一个有效值（1-12或*）")
+        raise forms.ValidationError("请输入一个有效值（参考crontab）")
         return month
     def clean_ser_weekday(self):
         weekday=self.cleaned_data['ser_weekday']
         if weekday=='*':
-            return weekday 
+            return weekday
+        if re.match(r'\*\/', weekday):
+            re_weekday=weekday.split('/')
+            if len(re_weekday)==2:
+                if re_weekday[1].isdigit():
+                    return weekday
+        if re.findall(r'\,',weekday):
+            list1=weekday.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(1,12):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return weekday
         if weekday.isdigit():
             if int(weekday)>=1 and int(weekday)<=7:
                 return weekday
@@ -183,6 +253,7 @@ class ServerConfigureTimeForm(ModelForm):
     class Meta:
         model=ServerConfigureTime
         fields=['ser_minute','ser_hour','ser_day','ser_month','ser_weekday','ser_jobstatus','ser_leapyear']
+        
                                 
         
 class GroupConfigure(models.Model):

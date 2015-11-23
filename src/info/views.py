@@ -10,7 +10,7 @@ from ljcms.settings import MEDIA_ROOT, MEDIA_URL
 #from ansible.playbook import PlayBook
 #from ansible import callbacks
 #from ansible import utils
-import os,time,random,stat,paramiko,commands
+import os,time,random,stat,paramiko,commands,shutil
 
 # Create your views here.
 #def index(request):
@@ -35,8 +35,6 @@ def server(request):
     return render_to_response('server.html', context, context_instance=RequestContext(request))
 
 def server_add(request):
-    server_inv_update()
-    group_inv_update()
     if request.method=='POST':
         form=ServerForm(request.POST)
         if form.is_valid():
@@ -54,8 +52,6 @@ def server_add(request):
         form=ServerForm()
     return render_to_response('server_add.html',{'form':form,})
 def server_edit(request,ip):
-    server_inv_update()
-    group_inv_update()
     server_now=Server.objects.get(s_ip=ip)
     if request.method=='POST':
         form=ServerForm(request.POST,instance=server_now)
@@ -69,13 +65,12 @@ def server_edit(request,ip):
     return render(request,'server_edit.html',{'form':form})
 def server_infoupdate(ip):
     server_now=Server.objects.get(s_ip=ip)
-    #fp=open("/tmp/host",'w')
-    #fp.write(server_now.s_ip)
-    #fp.close()
-    path=MEDIA_ROOT+'/server_inv.py'
+    fp=open("/tmp/host",'w')
+    fp.write(server_now.s_ip)
+    fp.close()
     import ansible.runner
     runner=ansible.runner.Runner(
-                                 host_list=path,
+                                 host_list='/tmp/host',
                                  pattern=str(ip),
                                  remote_user=server_now.s_user,
                                  remote_pass=server_now.s_password,
@@ -112,9 +107,10 @@ def server_infoupdate(ip):
     server_now.save()
     return
 def server_del(request,ip):
-    server_inv_update()
-    group_inv_update()
     server_now=Server.objects.get(s_ip=ip)
+    serconfs=server_now.serverconfigure_set.all()
+    for serconf in serconfs:
+        del_server_clear(serconf.id)
     server_now.delete()
     return HttpResponseRedirect('/') 
 def copy_sshkey(ip):
@@ -153,7 +149,6 @@ def group(request):
 
     return render(request,'group.html',{'group_list':group_list})
 def group_add(request):
-    group_inv_update()
     if request.method=='POST':
         form=GroupForm(request.POST)
         if form.is_valid():
@@ -163,7 +158,6 @@ def group_add(request):
         form=GroupForm()
     return render_to_response('group_add.html',{'form':form,}) 
 def group_edit(request,id):
-    group_inv_update()
     group_now=Group.objects.get(id=id)
     if request.method=='POST':
         form=GroupForm(request.POST,instance=group_now)
@@ -174,7 +168,6 @@ def group_edit(request,id):
         form=GroupForm(instance=group_now)
     return render_to_response('group_edit.html',{'form':form,'id':id,})
 def group_del(request,id):
-    group_inv_update()
     group_now=Group.objects.get(id=id)
     group_now.delete()
     return HttpResponseRedirect('/group/')  
@@ -333,17 +326,24 @@ def server_configure_edit(request,id):
 def server_configure_del(request,id):
     serconf=ServerConfigure.objects.get(id=id)
     server_id=str(serconf.ser_server.id)
+    del_server_clear(id)
+    serconf.delete()
+    return HttpResponseRedirect('/server_configure_manage/'+server_id)
+def del_server_clear(id):
+    serconf=ServerConfigure.objects.get(id=id)
     try:
         os.remove(serconf.ser_path)
         os.remove(serconf.serverconfiguretime.ser_jobpath)
+        shutil.rmtree(MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name)
     except Exception,e:
         print e
     command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" state=absent"'
-    commands.getstatusoutput(command)
-    serconf.delete()
-    return HttpResponseRedirect('/server_configure_manage/'+server_id)
+    r=commands.getstatusoutput(command)
+    return r
+    
 
 def server_configure_action(request,id):
+    server_inv_update()
     serconf=ServerConfigure.objects.get(id=id)
     server_id=str(serconf.ser_server.id)
     if request.method=='POST':
@@ -369,6 +369,7 @@ def server_configure_action(request,id):
         form=ServerConfigureActionForm({'ser_name':serconf.ser_name})
     return render_to_response('server_configure_action.html',{'form':form,'id':id,'server_ip':serconf.ser_server.s_ip,'server_id':server_id})
 def server_configure_time(request,id):
+    server_inv_update()
     serconf=ServerConfigure.objects.get(id=id)
     serconf_time=serconf.serverconfiguretime
     server_id=str(serconf.ser_server.id)
@@ -386,11 +387,14 @@ def server_configure_time(request,id):
                 if ser_shell=='':
                     inv_path=MEDIA_ROOT+'/server_inv.py'
                     path=MEDIA_ROOT+'/yml/time/server/'
+                    log_path=MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name+'/'
                     if not os.path.exists(path):
                         os.makedirs(path)
+                    if not os.path.exists(log_path):
+                        os.makedirs(log_path)
                     ser_shell=path+serconf.ser_name+time.strftime('_%Y%m%d%H%M%S')+'.sh'
                     f=open(ser_shell,'w')
-                    content='#!/bin/sh\nansible-playbook -i '+inv_path+' '+serconf.ser_path
+                    content='#!/bin/sh\nansible-playbook -i '+inv_path+' '+serconf.ser_path+' > '+log_path+'`date +%Y%m%d%H%M%S`'+'.log'
                     f.write(content)
                     f.close()
                     os.chmod(ser_shell,stat.S_IRWXU)
@@ -416,7 +420,44 @@ def server_configure_time(request,id):
         form=ServerConfigureTimeForm(instance=serconf.serverconfiguretime)
     return render_to_response('server_configure_time.html',{'form':form,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id})
     
-    
+def server_configure_time_log(request,id):  
+    serconf=ServerConfigure.objects.get(id=id)
+    server_id=str(serconf.ser_server.id)
+    log_path=MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name+'/'
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)  
+    logs=os.listdir(log_path)
+    page_size=10
+    paginator=Paginator(logs,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        log_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        log_list=paginator.page(paginator.num_pages)
+    return render_to_response('server_configure_time_log.html',{'log_list':log_list,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id})
+def server_configure_time_log_open(request,id,log): 
+    serconf=ServerConfigure.objects.get(id=id)
+    log_path=MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name+'/'
+    logfile=log_path+log
+    try:
+        f=open(logfile,'r')
+        result=f.read()
+    except Exception,e:
+        print e
+    f.close()
+    return render_to_response('server_configure_time_logresult.html',{'result':result,'log':log,'id':id})
+def server_configure_time_log_del(request,id,log):
+    serconf=ServerConfigure.objects.get(id=id)
+    log_path=MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name+'/'
+    logfile=log_path+log
+    try:
+        os.remove(logfile)
+    except Exception,e:
+        print e   
+    return HttpResponseRedirect('/server_configure_time_log/'+id)
 
 def server_configure_change(id):
     serconf=ServerConfigure.objects.get(id=id)
