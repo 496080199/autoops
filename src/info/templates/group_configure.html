@@ -8,6 +8,9 @@
 							服务器组名
 						</th>
 						<th>
+							服务器组员
+						</th>
+						<th>
 							配置
 						</th>
 						<th>
@@ -20,6 +23,11 @@
 					<tr class="success">
 						<td>
 							{{group.g_name}}
+						</td>
+						<td>
+						{% for server in group.server_set.all %}
+							{{server.s_ip}}<br>
+					    {% endfor %}
 						</td>
 						<td>
 							({{group.groupconfigure_set.count}}个)

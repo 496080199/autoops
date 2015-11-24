@@ -20,6 +20,9 @@
 							状态
 						</th>
 						<th>
+							定时
+						</th>
+						<th>
 							操作
 						</th>
 					</tr>
@@ -40,10 +43,18 @@
 							{{group_configure.gro_status}}
 						</td>
 						<td>
+							{% if group_configure.groupconfiguretime.gro_jobstatus == False %}
+							                 已关闭
+							{% else %}
+							               已开启   
+							{% endif %}
+						</td>
+						<td>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/group_configure_edit/{{group_configure.id}}'">编辑</button>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/group_configure_del/{{group_configure.id}}'">删除</button>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/group_configure_action/{{group_configure.id}}'">执行</button>
-							<button class="btn btn-primary btn-mini" type="button">定时任务</button>
+							<button class="btn btn-primary btn-mini" type="button" onclick="location='/group_configure_time/{{group_configure.id}}'">定时任务</button>
+							<button class="btn btn-primary btn-mini" type="button" onclick="location='/group_configure_time_log/{{group_configure.id}}'">任务日志</button>
 						</td>
 					</tr>
 				{% endfor %}

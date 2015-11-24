@@ -66,6 +66,18 @@ class ServerForm(ModelForm):
         model=Server
         exclude='s_status',
 class GroupForm(ModelForm):
+    g_server=ModelMultipleChoiceField(queryset=Server.objects.all(),required=False)
+    def __init__(self, *args, **kwargs):
+        super(GroupForm,self).__init__( *args, **kwargs)
+        if 'instance' in kwargs:
+            self.fields['g_server'].initial=self.instance.server_set.all()
+        
+    def save(self, *args, **kwargs):
+        super(GroupForm,self).save(*args, **kwargs)
+        self.instance.server_set.clear()
+        for server in self.cleaned_data['g_server']:
+            self.instance.server_set.add(server)
+            
     def clean_g_name(self):
         name=self.cleaned_data['g_name']
         for i in name:
@@ -279,6 +291,160 @@ class GroupConfigureActionForm(ModelForm):
     class Meta:
         model=GroupConfigure
         fields=['gro_name']
+        
+class GroupConfigureTime(models.Model):
+    conf=OneToOneField(GroupConfigure)
+    gro_minute=models.CharField("分",default='*',max_length=100)
+    gro_hour=models.CharField("时",default='*',max_length=100)
+    gro_day=models.CharField("天",default='*',max_length=100)
+    gro_month=models.CharField("月",default='*',max_length=100)
+    gro_weekday=models.CharField("周",default='*',max_length=100)
+    gro_jobpath=models.CharField("任务路径",max_length=100)
+    gro_jobstatus=models.BooleanField("是否开启",default=False)
+    gro_leapyear=models.BooleanField("是否闰年",default=False)
+    class Meta:
+        db_table="group_configure_time"
+class GroupConfigureTimeForm(ModelForm):
+    def clean_gro_minute(self):
+        minute=self.cleaned_data['gro_minute']
+        if minute=='*':
+            return minute
+        if re.match(r'\*\/', minute):
+            re_minute=minute.split('/')
+            if len(re_minute)==2:
+                if re_minute[1].isdigit():
+                    return minute
+        if re.findall(r'\,',minute):
+            list1=minute.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(0,59):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return minute      
+        if minute.isdigit():
+            if int(minute)>=0 and int(minute)<=59:
+                return minute
+        raise forms.ValidationError("请输入一个有效值（参考crontab）")
+        return minute
+    def clean_gro_hour(self):
+        hour=self.cleaned_data['gro_hour']
+        if hour=='*':
+            return hour
+        if re.match(r'\*\/', hour):
+            re_hour=hour.split('/')
+            if len(re_hour)==2:
+                if re_hour[1].isdigit():
+                    return hour
+        if re.findall(r'\,',hour):
+            list1=hour.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(0,23):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return hour
+        if hour.isdigit():
+            if int(hour)>=0 and int(hour)<=23:
+                return hour
+        raise forms.ValidationError("请输入一个有效值（参考crontab）")
+        return hour
+    def clean_gro_day(self):
+        day=self.cleaned_data['gro_day']
+        month=self['gro_month'].value()
+        leapyear=self['gro_leapyear'].value()
+        if day=='*':
+            return day
+        if month=='*':
+            if day.isdigit():
+                if int(day)>=1 and int(day)<=31:
+                    return day
+        if re.match(r'\*\/', day):
+            re_day=day.split('/')
+            if len(re_day)==2:
+                if re_day[1].isdigit():
+                    return day
+        if re.findall(r'\,',day):
+            list1=day.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(1,31):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return day
+        if month.isdigit():
+            if int(month) in [1,3,5,7,8,10,12]:
+                if day.isdigit():
+                    if int(day)>=1 and int(day)<=31:
+                        return day
+            elif int(month) in [4,6,9,12]:
+                if day.isdigit():
+                    if int(day)>=1 and int(day)<=30:
+                        return day
+            elif int(month)==2:
+                if day.isdigit():
+                    if leapyear==0:
+                        if int(day)>=1 and int(day)<=28:
+                            return day
+                    else:
+                        if int(day)>=1 and int(day)<=29:
+                            return day      
+        raise  forms.ValidationError("请输入一个有效值（参考crontab）")   
+        return day
+    def clean_gro_month(self):
+        month=self.cleaned_data['gro_month']
+        if month=='*':
+            return month
+        if re.match(r'\*\/', month):
+            re_month=month.split('/')
+            if len(re_month)==2:
+                if re_month[1].isdigit():
+                    return month
+        if re.findall(r'\,',month):
+            list1=month.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(1,12):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return month
+        if month.isdigit():
+            if int(month)>=1 and int(month)<=12:
+                return month
+        raise forms.ValidationError("请输入一个有效值（参考crontab）")
+        return month
+    def clean_gro_weekday(self):
+        weekday=self.cleaned_data['gro_weekday']
+        if weekday=='*':
+            return weekday
+        if re.match(r'\*\/', weekday):
+            re_weekday=weekday.split('/')
+            if len(re_weekday)==2:
+                if re_weekday[1].isdigit():
+                    return weekday
+        if re.findall(r'\,',weekday):
+            list1=weekday.split(',')
+            list2=set(list1)
+            if len(list1)==len(list2):
+                for i in list1:
+                    if i.isdigit() and int(i) in range(1,12):
+                        continue
+                    raise forms.ValidationError("请输入一个有效值（参考crontab）")
+                return weekday
+        if weekday.isdigit():
+            if int(weekday)>=1 and int(weekday)<=7:
+                return weekday
+        raise forms.ValidationError("请输入一个有效值（1-7或*）")
+        return weekday       
+    class Meta:
+        model=GroupConfigureTime
+        fields=['gro_minute','gro_hour','gro_day','gro_month','gro_weekday','gro_jobstatus','gro_leapyear']
+        
+                                
         
 class File(models.Model):
     f_path=models.CharField("文件路径",max_length=100)

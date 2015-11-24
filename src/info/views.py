@@ -122,7 +122,7 @@ def copy_sshkey(ip):
     try:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(server.s_ip, username=server.s_user, password=server.s_password,timeout=10)
+        client.connect(server.s_ip, username=server.s_user, password=server.s_password,port=server.s_port,timeout=10)
         client.exec_command('mkdir -p ~/.ssh/')
         client.exec_command('echo "%s" >> ~/.ssh/authorized_keys' % ssh_key)
         client.exec_command('chmod 644 ~/.ssh/authorized_keys')
@@ -169,6 +169,9 @@ def group_edit(request,id):
     return render_to_response('group_edit.html',{'form':form,'id':id,})
 def group_del(request,id):
     group_now=Group.objects.get(id=id)
+    for gro_conf in group_now.groupconfigure_set.all():
+        del_group_clear(gro_conf.id)
+        gro_conf.delete()
     group_now.delete()
     return HttpResponseRedirect('/group/')  
 
@@ -203,7 +206,7 @@ def group_inv_update():
     f.write(content)
     f.close()
     os.chmod(path,stat.S_IRWXU)
-    return
+    return content
    
 def hardware(request):
     hardwares=Hardware.objects.all()
@@ -284,7 +287,7 @@ def server_configure_new(request,id):
                 os.makedirs(path)
             file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
             dst=open(file_path,'wt')
-            line='---\n- hosts: '+server.s_ip+'\n  #hosts automatic generated,not change\n'
+            line='---\n- hosts: '+server.s_ip+'\n  port: '+str(server.s_port)+'\n  #hosts automatic generated,not change\n'
             dst.write(line)
             dst.close()
             serconf.ser_name=file_name
@@ -337,7 +340,7 @@ def del_server_clear(id):
         shutil.rmtree(MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name)
     except Exception,e:
         print e
-    command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" state=absent"'
+    command='ansible "127.0.0.1" -m cron -a "name="server_'+serconf.ser_name+'" state=absent"'
     r=commands.getstatusoutput(command)
     return r
     
@@ -398,10 +401,10 @@ def server_configure_time(request,id):
                     f.write(content)
                     f.close()
                     os.chmod(ser_shell,stat.S_IRWXU)
-                command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" minute="'+minute+'" hour="'+hour+'" day="'+day+'" month="'+month+'" weekday="'+weekday+'" job="'+ser_shell+'""'
+                command='ansible "127.0.0.1" -m cron -a "name="server_'+serconf.ser_name+'" minute="'+minute+'" hour="'+hour+'" day="'+day+'" month="'+month+'" weekday="'+weekday+'" job="'+ser_shell+'""'
                 commands.getstatusoutput(command)
             else:
-                command='ansible "127.0.0.1" -m cron -a "name="'+serconf.ser_name+'" state=absent"'
+                command='ansible "127.0.0.1" -m cron -a "name="server_'+serconf.ser_name+'" state=absent"'
                 commands.getstatusoutput(command)
             serconf_time.ser_jobpath=ser_shell
             serconf_time.ser_minute=minute
@@ -457,6 +460,16 @@ def server_configure_time_log_del(request,id,log):
         os.remove(logfile)
     except Exception,e:
         print e   
+    return HttpResponseRedirect('/server_configure_time_log/'+id)
+def server_configure_time_log_delall(request,id): 
+    serconf=ServerConfigure.objects.get(id=id)
+    log_path=MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name+'/'
+    logs=os.listdir(log_path)
+    for log in logs:
+        try:
+            os.remove(log_path+log)
+        except Exception,e:
+            print e   
     return HttpResponseRedirect('/server_configure_time_log/'+id)
 
 def server_configure_change(id):
@@ -522,6 +535,8 @@ def group_configure_new(request,id):
             groconf.gro_path=file_path
             group.groupconfigure_set.add(groconf)
             groconf.save()
+            groconf_time=GroupConfigureTime(conf=groconf)
+            groconf_time.save()
             group_configure_change(groconf.id)
             return HttpResponseRedirect('/group_configure_manage/'+str(group.id)) 
             
@@ -555,14 +570,23 @@ def group_configure_edit(request,id):
 def group_configure_del(request,id):
     groconf=GroupConfigure.objects.get(id=id)
     group_id=str(groconf.gro_group.id)
-    try:
-        os.remove(groconf.gro_path)
-    except Exception,e:
-        print e
+    del_group_clear(id)
     groconf.delete()
     return HttpResponseRedirect('/group_configure_manage/'+group_id)
+def del_group_clear(id):
+    groconf=GroupConfigure.objects.get(id=id)
+    try:
+        os.remove(groconf.gro_path)
+        os.remove(groconf.groupconfiguretime.gro_jobpath)
+        shutil.rmtree(MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name)
+    except Exception,e:
+        print e
+    command='ansible "127.0.0.1" -m cron -a "name="group_'+groconf.gro_name+'" state=absent"'
+    r=commands.getstatusoutput(command)
+    return r
 
 def group_configure_action(request,id):
+    group_inv_update()
     groconf=GroupConfigure.objects.get(id=id)
     group_id=str(groconf.gro_group.id)
     if request.method=='POST':
@@ -595,6 +619,107 @@ def group_configure_action(request,id):
     else:
         form=GroupConfigureActionForm({'gro_name':groconf.gro_name})
     return render_to_response('group_configure_action.html',{'form':form,'id':id,'g_name':groconf.gro_group.g_name,'group_id':group_id})
+
+def group_configure_time(request,id):
+    group_inv_update()
+    groconf=GroupConfigure.objects.get(id=id)
+    groconf_time=groconf.groupconfiguretime
+    group_id=str(groconf.gro_group.id)
+    if request.method=='POST':
+        form=GroupConfigureTimeForm(request.POST,instance=groconf_time)
+        if form.is_valid():
+            gro_shell=groconf_time.gro_jobpath
+            minute=form['gro_minute'].value()
+            hour=form['gro_hour'].value()
+            day=form['gro_day'].value()
+            month=form['gro_month'].value()
+            weekday=form['gro_weekday'].value()
+            groconf_time.gro_jobstatus=form['gro_jobstatus'].value()
+            if form['gro_jobstatus'].value()!=0: 
+                if gro_shell=='':
+                    inv_path=MEDIA_ROOT+'/group_inv.py'
+                    path=MEDIA_ROOT+'/yml/time/group/'
+                    log_path=MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name+'/'
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    if not os.path.exists(log_path):
+                        os.makedirs(log_path)
+                    gro_shell=path+groconf.gro_name+time.strftime('_%Y%m%d%H%M%S')+'.sh'
+                    f=open(gro_shell,'w')
+                    content='#!/bin/sh\nansible-playbook -i '+inv_path+' '+groconf.gro_path+' > '+log_path+'`date +%Y%m%d%H%M%S`'+'.log'
+                    f.write(content)
+                    f.close()
+                    os.chmod(gro_shell,stat.S_IRWXU)
+                command='ansible "127.0.0.1" -m cron -a "name="group_'+groconf.gro_name+'" minute="'+minute+'" hour="'+hour+'" day="'+day+'" month="'+month+'" weekday="'+weekday+'" job="'+gro_shell+'""'
+                commands.getstatusoutput(command)
+            else:
+                command='ansible "127.0.0.1" -m cron -a "name="group_'+groconf.gro_name+'" state=absent"'
+                commands.getstatusoutput(command)
+            groconf_time.gro_jobpath=gro_shell
+            groconf_time.gro_minute=minute
+            groconf_time.gro_hour=hour
+            groconf_time.gro_day=day
+            groconf_time.gro_month=month
+            groconf_time.gro_weekday=weekday
+            groconf_time.save()
+            return HttpResponseRedirect('/group_configure_manage/'+group_id)
+    else:
+        year=int(time.strftime('%Y'))
+        groconf_time.gro_leapyear=False
+        if (year%4==0 and year%100!=0) or year%400==0:
+            groconf_time.gro_leapyear=True
+        groconf_time.save()
+        form=GroupConfigureTimeForm(instance=groconf.groupconfiguretime)
+    return render_to_response('group_configure_time.html',{'form':form,'groconf_name':groconf.gro_name,'id':id,'group_id':group_id})
+    
+def group_configure_time_log(request,id):  
+    groconf=GroupConfigure.objects.get(id=id)
+    group_id=str(groconf.gro_group.id)
+    log_path=MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name+'/'
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)  
+    logs=os.listdir(log_path)
+    page_size=10
+    paginator=Paginator(logs,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        log_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        log_list=paginator.page(paginator.num_pages)
+    return render_to_response('group_configure_time_log.html',{'log_list':log_list,'groconf_name':groconf.gro_name,'id':id,'group_id':group_id})
+def group_configure_time_log_open(request,id,log): 
+    groconf=GroupConfigure.objects.get(id=id)
+    log_path=MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name+'/'
+    logfile=log_path+log
+    try:
+        f=open(logfile,'r')
+        result=f.read()
+    except Exception,e:
+        print e
+    f.close()
+    return render_to_response('group_configure_time_logresult.html',{'result':result,'log':log,'id':id})
+def group_configure_time_log_del(request,id,log):
+    groconf=GroupConfigure.objects.get(id=id)
+    log_path=MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name+'/'
+    logfile=log_path+log
+    try:
+        os.remove(logfile)
+    except Exception,e:
+        print e   
+    return HttpResponseRedirect('/group_configure_time_log/'+id)
+def group_configure_time_log_delall(request,id): 
+    groconf=GroupConfigure.objects.get(id=id)
+    log_path=MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name+'/'
+    logs=os.listdir(log_path)
+    for log in logs:
+        try:
+            os.remove(log_path+log)
+        except Exception,e:
+            print e   
+    return HttpResponseRedirect('/group_configure_time_log/'+id)
 
 def group_configure_change(id):
     groconf=GroupConfigure.objects.get(id=id)

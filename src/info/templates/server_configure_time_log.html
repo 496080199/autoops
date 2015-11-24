@@ -2,6 +2,7 @@
 {% block configedit_act %}class="active"{% endblock%}
 {% block content %}
 <legend>{{serconf_name}}的定时任务日志<button class="btn btn-mini" type="button" onclick="location='{% url 'server_configure_manage' server_id %}' ">返回</button></legend>
+<label style="text-align:right"><button class="btn btn-primary" type="button" onclick="location='{% url 'server_configure_time_log_delall' id %}' ">一键全清除</button></label>
 			<table class="table">
 				<thead>
 					<tr>
