@@ -27,6 +27,7 @@ class Server(models.Model):
     s_password=models.CharField("服务器密码",max_length=50)
     s_port=models.IntegerField("服务器SSH端口")
     s_status=models.CharField("服务器连接状态",max_length=255,null=True)
+    s_monitor=models.BooleanField("是否开启监控",default=False)
     def __unicode__(self):
         return self.s_name
     class Meta:
@@ -472,6 +473,60 @@ class FileEditForm(ModelForm):
         model=File
         fields=['f_filecontent']
     
-    
+class Log(models.Model):
+    time=models.DateTimeField(auto_now=True)
+    server=models.ForeignKey(Server)
+    class Meta:
+        db_table="log"
+class Load(models.Model):
+    ldavg1=models.CharField(max_length=200)
+    ldavg5=models.CharField(max_length=200)
+    ldavg10=models.CharField(max_length=200)
+    log=models.ForeignKey(Log)
+    class Meta:
+        db_table="load"
+class Cpu(models.Model):
+    user=models.CharField(max_length=200)
+    nice=models.CharField(max_length=200)
+    system=models.CharField(max_length=200)
+    iowait=models.CharField(max_length=200)
+    steal=models.CharField(max_length=200)
+    idle=models.CharField(max_length=200)
+    log=models.ForeignKey(Log)
+    class Meta:
+        db_table="cpu"
+class Mem(models.Model):
+    kbmemfree=models.CharField(max_length=200)
+    kbmemused=models.CharField(max_length=200)
+    memused=models.CharField(max_length=200)
+    log=models.ForeignKey(Log)
+    class Meta:
+        db_table="mem"
+class Disk(models.Model):
+    dev=models.CharField(max_length=200)
+    size=models.CharField(max_length=200)
+    used=models.CharField(max_length=200)
+    avail=models.CharField(max_length=200)
+    use=models.CharField(max_length=200)
+    mount=models.CharField(max_length=200)
+    log=models.ForeignKey(Log)
+    class Meta:
+        db_table="disk"
+class Io(models.Model): 
+    dev=models.CharField(max_length=200)
+    tps=models.CharField(max_length=200)
+    rd_sec=models.CharField(max_length=200)  
+    wd_sec=models.CharField(max_length=200)
+    util=models.CharField(max_length=200) 
+    log=models.ForeignKey(Log)
+    class Meta:
+        db_table="io"  
+class Network(models.Model):
+    rxbyt=models.CharField(max_length=200)
+    txbyt=models.CharField(max_length=200)
+    log=models.ForeignKey(Log) 
+    class Meta:
+        db_table="network"
+        
         
 

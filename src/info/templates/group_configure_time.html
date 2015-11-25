@@ -1,0 +1,29 @@
+{% extends 'config.html' %}
+{% block configaction_act %}class="active"{% endblock%}
+{% block content %}
+<form method="POST" action="{% url 'group_configure_time' id %}">
+				<fieldset>
+					 <legend>定时任务</legend> 
+					 <label>任务名称：</label>
+					 {{groconf_name}}
+					 <label>是否开启：</label> 
+					 {{form.gro_jobstatus}}
+					 <span hidden>
+					 <label>是否闰年：</label>
+					 {{form.gro_leapyear}}
+					 </span>
+					 <label>分：</label>
+					 {{form.gro_minute}}{{form.gro_minute.errors}}
+					 <label>时：</label>
+					 {{form.gro_hour}}{{form.gro_hour.errors}}
+					 <label>天：</label>
+					 {{form.gro_day}}{{form.gro_day.errors}}
+					 <label>月：</label>
+					 {{form.gro_month}}{{form.gro_month.errors}}
+					 <label>周几：</label>
+					 {{form.gro_weekday}}{{form.gro_weekday.errors}}
+					 <br>
+					 <button type="submit" class="btn btn-primary">提交</button> <button type="button" class="btn" onclick="location='{% url 'group_configure_manage' group_id %}' ">返回</button>
+				</fieldset>
+			</form>
+{% endblock %}
