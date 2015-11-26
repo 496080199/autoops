@@ -55,6 +55,8 @@ urlpatterns = [
     url('^file_upload/$','info.views.file_upload',name='file_upload'),
     url('^file_edit/([0-9]+)$','info.views.file_edit',name='file_edit'),
     url('^file_del/([0-9]+)$','info.views.file_del',name='file_del'),
+    url(r'^server_monitor$','info.views.server_monitor',name='server_monitor'),
+    url(r'^server_monitor_view/([0-9]+)/([0-9]+)$','info.views.server_monitor_view',name='server_monitor_view'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT) 

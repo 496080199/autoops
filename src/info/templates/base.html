@@ -8,6 +8,7 @@
 <script src="//cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/bootstrap/2.3.2/js/bootstrap.js"></script>
 <script src="//cdn.bootcss.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+{% block head %} {% endblock %}
 <title> {% block title %}LJCMS{% endblock %} - power by clj</title>
 </head>
 <body>
@@ -32,7 +33,7 @@
 					<a href="{% url 'server_configure' %}">配置管理</a>
 				</li>
 				<li {% block monitor_act %}{% endblock%}>
-					<a href="#">监控</a>
+					<a href="{% url 'server_monitor' %}">监控</a>
 				</li>
 				<li class="divider">
 				</li>

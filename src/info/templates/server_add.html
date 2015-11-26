@@ -11,6 +11,7 @@
 					<label>服务器账号</label>{{form.s_user}}{{form.s_user.errors}}<br>
 					<label>服务器密码</label>{{form.s_password}}{{form.s_password.errors}}<br>
 					<label>服务器SSH端口</label>{{form.s_port}}{{form.s_port.errors}}<br>
+					<label>开启监控</label>{{form.s_monitor}}{{form.s_monitor.errors}}<br>
 					 <button class="btn btn-primary" type="submit">提交</button><button class="btn" type="button" onclick="location='{% url 'server' %}' ">返回</button>
 				</fieldset>
 			</form>

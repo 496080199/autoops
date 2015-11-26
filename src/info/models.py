@@ -486,6 +486,7 @@ class Load(models.Model):
     class Meta:
         db_table="load"
 class Cpu(models.Model):
+    dev=models.CharField(max_length=200)
     user=models.CharField(max_length=200)
     nice=models.CharField(max_length=200)
     system=models.CharField(max_length=200)
@@ -522,6 +523,9 @@ class Io(models.Model):
     class Meta:
         db_table="io"  
 class Network(models.Model):
+    dev=models.CharField(max_length=200)
+    rxpck=models.CharField(max_length=200)
+    txpck=models.CharField(max_length=200)
     rxbyt=models.CharField(max_length=200)
     txbyt=models.CharField(max_length=200)
     log=models.ForeignKey(Log) 

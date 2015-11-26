@@ -11,6 +11,8 @@ from ljcms.settings import MEDIA_ROOT, MEDIA_URL
 #from ansible import callbacks
 #from ansible import utils
 import os,time,random,stat,paramiko,commands,shutil
+import datetime
+
 
 # Create your views here.
 #def index(request):
@@ -806,4 +808,71 @@ def file_del(request,id):
         print e
     f.delete()
     return HttpResponseRedirect('/filelist/') 
+
+def server_monitor(request):
+    servers=Server.objects.all()
+    page_size=10
+    paginator=Paginator(servers,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        server_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        server_list=paginator.page(paginator.num_pages)
+
+    context={'server_list':server_list}
+#    return render(request,'server.html',context)
+    return render_to_response('server_monitor.html', context, context_instance=RequestContext(request))
+    
+def server_monitor_view(request,id,t):
+    server=Server.objects.get(id=id)
+    now=datetime.datetime.now()
+    time={
+        '1': now+datetime.timedelta(hours=-1),
+        '6': now+datetime.timedelta(hours=-6),
+        '24': now+datetime.timedelta(hours=-24)
+    }              
+    log_set=server.log_set.filter(time__range=(time[str(t)],now))
+    x=[]
+    ldavg1=[]
+    ldavg5=[]
+    ldavg10=[]
+    user=[]
+    nice=[]
+    system=[]
+    iowait=[]
+    steal=[]
+    idle=[]
+    kbmemfree=[]
+    kbmemused=[]
+    memused=[]
+    
+    for log in log_set:
+        x.append(str(log.time))
+        loads=log.load_set.all()
+        for load in loads:
+            ldavg1.append(load.ldavg1)
+            ldavg5.append(load.ldavg5)
+            ldavg10.append(load.ldavg10)
+        cpus=log.cpu_set.all()
+        for cpu in cpus:
+            user.append(cpu.user)
+            nice.append(cpu.nice)
+            system.append(cpu.system)
+            iowait.append(cpu.iowait)
+            steal.append(cpu.steal)
+            idle.append(cpu.idle)
+        mems=log.mem_set.all()
+        for mem in mems:
+            kbmemfree.append(mem.kbmemfree)
+            kbmemused.append(mem.kbmemused)
+            memused.append(mem.memused)
+        
+
+    content={'x':x,'ldavg1':ldavg1,'ldavg5':ldavg5,'ldavg10':ldavg10,'user':user,'nice':nice,'system':system,'iowait':iowait,'steal':steal,'idle':idle,'kbmemfree':kbmemfree,'kbmemused':kbmemused,'memused':memused}
+    
+    
+    return render_to_response('server_monitor_view.html',content, context_instance=RequestContext(request))
 

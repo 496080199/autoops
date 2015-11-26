@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 from info.models import * 
-import time,paramiko
-#import MySQLdb
-#import ansible.runner
-from ljcms.settings import DATABASES, MEDIA_ROOT
+import time,paramiko,re
+
 
 
 class Command(BaseCommand):
@@ -15,18 +13,82 @@ class Command(BaseCommand):
                 if server.s_monitor==True:
                     log=Log(server=server)
                     log.save()
-                    path=MEDIA_ROOT+'/server_inv.py' 
                     ssh = paramiko.SSHClient()
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                    ssh.connect(server.s_ip,server.s_port,server.s_user, server.s_password)
+                    try:
+                        ssh.connect(server.s_ip,server.s_port,server.s_user, server.s_password)
+                    except Exception:
+                        continue
                     ssh.exec_command('yum install -y sysstat')
+                    ##Load##
+                    stdin,stdout,stderr=ssh.exec_command('sar -q 1 2|grep -E "Average|平均时间"')
+                    out=stdout.read()
+                    sar_list=out.split('\n')
+                    for sar in sar_list:
+                        line=re.split(r'\s+',sar)
+                        if len(line)==6:
+                            log_load=Load(log=log)
+                            log_load.ldavg1=line[3]
+                            log_load.ldavg5=line[4]
+                            log_load.ldavg10=line[5]
+                            log_load.save()
+
+                    ##CPU##
+                    stdin,stdout,stderr=ssh.exec_command('sar -u 1 2|grep -E "Average|平均时间"')
+                    out=stdout.read()
+                    sar_list=out.split('\n')
+                    cpu={}
+                    for sar in sar_list:
+                        line=re.split(r'\s+',sar)
+                        if len(line)==8:
+                            cpu[line[1]]=[line[2],line[3],line[4],line[5],line[6],line[7]]
+                    for key in cpu:
+                        log_cpu=Cpu(log=log)
+                        log_cpu.dev=key
+                        log_cpu.user=cpu[key][0]
+                        log_cpu.nice=cpu[key][1]
+                        log_cpu.system=cpu[key][2]
+                        log_cpu.iowait=cpu[key][3]
+                        log_cpu.steal=cpu[key][4]
+                        log_cpu.idle=cpu[key][5]
+                        log_cpu.save()
+                    ##Mem##
+                    stdin,stdout,stderr=ssh.exec_command('sar -r 1 2|grep -E "Average|平均时间"')
+                    out=stdout.read()
+                    sar_list=out.split('\n')
+                    for sar in sar_list:
+                        line=re.split(r'\s+',sar)
+                        if len(line)==8:
+                            log_mem=Mem(log=log)
+                            log_mem.kbmemfree=float(line[1])/1024
+                            log_mem.kbmemused=float(line[2])/1024
+                            log_mem.memused=line[3]
+                            log_mem.save()
+                    ##Disk##
+                    stdin,stdout,stderr=ssh.exec_command('df -h |grep -Ev "Filesystem|文件系统"')
+                    out=stdout.read()
+                    sar_list=out.split('\n')
+                    disk={}
+                    for sar in sar_list:
+                        line=re.split(r'\s+',sar)
+                        if len(line)==6:
+                            disk[line[0]]=[line[1],line[2],line[3],line[4],line[5]]
+                    for key in disk:
+                        log_disk=Disk(log=log)
+                        log_disk.dev=key
+                        log_disk.size=disk[key][0]
+                        log_disk.used=disk[key][1]
+                        log_disk.avail=disk[key][2]
+                        log_disk.use=disk[key][3]
+                        log_disk.mount=disk[key][4]
+                        log_disk.save()
                     ##IO##
                     stdin,stdout,stderr=ssh.exec_command('sar -dp 1 2|grep -E "Average|平均时间" |grep -v DEV')
                     out=stdout.read()
-                    sar_iolist=out.split('\n')
+                    sar_list=out.split('\n')
                     io={}
-                    for sar_io in sar_iolist:
-                        line=sar_io.split('      ')
+                    for sar in sar_list:
+                        line=re.split(r'\s+',sar)
                         if len(line)==10:
                             io[line[1]]=[line[2],line[3],line[4],line[9]]
                     for key in io:
@@ -37,7 +99,23 @@ class Command(BaseCommand):
                         log_io.wd_sec=io[key][2]
                         log_io.util=io[key][3]
                         log_io.save()
-                        
+                    ##Network##
+                    stdin,stdout,stderr=ssh.exec_command('sar -n DEV 1 2|grep -E "Average|平均时间"|grep -v IFACE|grep -v lo')
+                    out=stdout.read()
+                    sar_list=out.split('\n')
+                    network={}
+                    for sar in sar_list:
+                        line=re.split(r'\s+',sar)
+                        if len(line)==9:
+                            network[line[1]]=[line[2],line[3],line[4],line[5]]
+                    for key in network:
+                        log_network=Network(log=log)
+                        log_network.dev=key
+                        log_network.rxpck=network[key][0]
+                        log_network.txpck=network[key][1]
+                        log_network.rxbyt=network[key][2]
+                        log_network.txbyt=network[key][3]
+                        log_network.save() 
                     ssh.close()
                         
                     
