@@ -847,8 +847,8 @@ def server_monitor_view(request,id,t):
     idle=[]
     kbmemfree=[]
     kbmemused=[]
-    memused=[]
-    
+    mount={}
+    num={}
     for log in log_set:
         x.append(str(log.time))
         loads=log.load_set.all()
@@ -868,11 +868,20 @@ def server_monitor_view(request,id,t):
         for mem in mems:
             kbmemfree.append(mem.kbmemfree)
             kbmemused.append(mem.kbmemused)
-            memused.append(mem.memused)
+        disks=log.disk_set.all()
+        n=1
+        for disk in disks:
+            mount.setdefault(n,{'used':[],'avail':[]})
+            num.setdefault(n,disk.mount)
+            
+            mount[n]['used'].append(disk.used)
+            mount[n]['avail'].append(disk.avail)
+            #mount[n]['use'].append(disk.use)
+            n+=1
         
 
-    content={'x':x,'ldavg1':ldavg1,'ldavg5':ldavg5,'ldavg10':ldavg10,'user':user,'nice':nice,'system':system,'iowait':iowait,'steal':steal,'idle':idle,'kbmemfree':kbmemfree,'kbmemused':kbmemused,'memused':memused}
-    
+    content={'x':x,'ldavg1':ldavg1,'ldavg5':ldavg5,'ldavg10':ldavg10,'user':user,'nice':nice,'system':system,'iowait':iowait,'steal':steal,'idle':idle,'kbmemfree':kbmemfree,'kbmemused':kbmemused,'mount':mount,"num":num}
+    #return HttpResponse(num.items())
     
     return render_to_response('server_monitor_view.html',content, context_instance=RequestContext(request))
 

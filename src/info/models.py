@@ -504,12 +504,10 @@ class Mem(models.Model):
     class Meta:
         db_table="mem"
 class Disk(models.Model):
-    dev=models.CharField(max_length=200)
-    size=models.CharField(max_length=200)
+    mount=models.CharField(max_length=200)
     used=models.CharField(max_length=200)
     avail=models.CharField(max_length=200)
     use=models.CharField(max_length=200)
-    mount=models.CharField(max_length=200)
     log=models.ForeignKey(Log)
     class Meta:
         db_table="disk"

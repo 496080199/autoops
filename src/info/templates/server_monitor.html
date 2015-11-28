@@ -1,0 +1,46 @@
+{% extends 'monitor.html' %}
+{% block server_act %}class="active" {% endblock %}
+{% block content %}
+<table class="table">
+				<thead>
+					<tr>
+						<th>
+							服务器IP
+						</th>
+						<th>
+							操作
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for server in server_list %}
+					<tr class="success">
+						<td>
+							{{server.s_ip}}
+						</td>
+						<td>
+							<button class="btn btn-mini btn-primary" type="button">查看</button>
+						</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+			
+			<div class="pagination pagination-centered pagination-small">
+				<ul>
+				{% if server_list.has_previous %}
+					<li>
+						<a href="?page={{server_list.previous_page_number}}">上一页</a>
+					</li>
+				{% endif %}
+					<li>
+						<a href="#">第{{server_list.number}}页 总共{{server_list.paginator.num_pages}}页</a>
+					</li>
+				{% if server_list.has_next %}
+					<li>
+						<a href="?page={{server_list.next_page_number}}">下一页</a>
+					</li>
+				{% endif %}
+				</ul>
+			</div>
+{% endblock%}				

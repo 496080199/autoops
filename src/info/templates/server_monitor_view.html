@@ -1,0 +1,265 @@
+{% extends 'monitor.html' %}
+{% block head %}
+<script src="//cdn.bootcss.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/highcharts/4.1.9/highcharts.js"></script>
+<script src="//cdn.bootcss.com/highcharts/4.1.9/modules/exporting.js"></script>
+ <script>
+    $(function () {
+    $('#load').highcharts({
+        title: {
+            text: '负载Load',
+            x: -20 //center
+        },
+        xAxis: {
+            categories:[
+            {% for data in x %}
+            "{{data}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            title: {
+                text: ' '
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: ' '
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{
+            name: 'ldavg1',
+            data: [
+            {% for data in ldavg1 %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'ldavg5',
+            data: [
+            {% for data in ldavg5 %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'ldavg10',
+            data: [
+            {% for data in ldavg10 %}
+            {{data}},
+            {% endfor %}
+            ]
+        }]
+    });
+});
+  </script>
+  <script>
+    $(function () {
+    $('#cpu').highcharts({
+        title: {
+            text: '处理器CPU',
+            x: -20 //center
+        },
+        xAxis: {
+            categories:[
+            {% for data in x %}
+            "{{data}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            title: {
+                text: ' '
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: ' '
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{
+            name: 'user',
+            data: [
+            {% for data in user %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'nice',
+            data: [
+            {% for data in nice %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'system',
+            data: [
+            {% for data in system %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'iowait',
+            data: [
+            {% for data in iowait %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'steal',
+            data: [
+            {% for data in steal %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'idle',
+            data: [
+            {% for data in idle %}
+            {{data}},
+            {% endfor %}
+            ]
+        }]
+    });
+});
+  </script>
+  <script>
+$(function () {
+    $('#mem').highcharts({
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: '内存Mem'
+        },
+        xAxis: {
+            categories:[
+            {% for data in x %}
+            "{{data}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: '百分比/单位GB'
+            }
+        },
+        tooltip: {
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+            shared: true
+        },
+        plotOptions: {
+            column: {
+                stacking: 'percent'
+            }
+        },
+            series: [{
+            name: 'kbmemfree',
+            data: [
+            {% for data in kbmemfree %}
+            {{data}},
+            {% endfor %}
+            ]
+        }, {
+            name: 'kbmemused',
+            data: [
+            {% for data in kbmemused %}
+            {{data}},
+            {% endfor %}
+            ]
+        }]
+    });
+});				
+</script> 
+
+
+{% for key1,value1 in mount.items %}	
+<script>
+
+$(function () {
+    $('#disk{{key1}}').highcharts({
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: {% for keyn,valuen in num.items %}
+            		{% if key1 == keyn %}
+            			'分区：{{valuen}}'
+            		{% endif %}
+            	{% endfor %}
+        },
+        xAxis: {
+            categories: [
+            {% for data in x %}
+            "{{data}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: '百分比/单位G'
+            }
+        },
+        tooltip: {
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+            shared: true
+        },
+        plotOptions: {
+            column: {
+                stacking: 'percent'
+            }
+        },
+            series: [{% for key2,value2 in value1.items %}{
+            name: '{{key2}}',
+            data: [{%for data in value2 %}
+            		{{data}},
+            		{% endfor %}
+            	]
+        },
+        {% endfor %}
+         ]
+    });
+});	
+			
+</script> 
+{% endfor %}                                                                				
+{% endblock %}
+{% block server_act %}class="active" {% endblock %}
+{% block content %}
+<legend>{{IP}}的{{hour}}内监控图<button class="btn btn-mini" type="button">返回</button></legend>
+ <label style="text-align:right"><button class="btn btn-primary" type="button">1小时</button><button class="btn btn-primary" type="button">6小时</button><button class="btn btn-primary" type="button">24小时</button></label>
+ 
+  <legend>负载</legend><br /><br /> 
+  <div id="load" style="min-width:700px;height:400px"></div>
+  <legend>CPU</legend><br /><br /> 
+  <div id="cpu" style="min-width:700px;height:400px"></div>
+  <legend>内存</legend><br /><br /> 
+  <div id="mem" style="min-width:700px;height:400px"></div>
+  <legend>磁盘</legend><br /><br /> 
+ {% for key1 in mount.keys %}
+  <div id="disk{{key1}}" style="min-width:700px;height:400px"></div>
+  {% endfor %}
+  <legend>IO</legend><br /><br /> 
+  
+  <legend>网络</legend><br /><br />
+  
+{% endblock%}				

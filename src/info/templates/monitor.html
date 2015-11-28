@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block monitor_act %}class="active"{% endblock%}
+{% block nav %}
+<ul class="nav nav-pills">
+				<li {% block server_act %}{% endblock %}><a href="{% url 'server_monitor' %}">服务器监控</a></li>
+				<li {% block group_act %}{% endblock %}><a href="#">服务器组监控</a></li>
+			</ul> 
+{% block content %}
+{% endblock%}	
+{% endblock %}			

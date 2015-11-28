@@ -60,8 +60,8 @@ class Command(BaseCommand):
                         line=re.split(r'\s+',sar)
                         if len(line)==8:
                             log_mem=Mem(log=log)
-                            log_mem.kbmemfree=float(line[1])/1024
-                            log_mem.kbmemused=float(line[2])/1024
+                            log_mem.kbmemfree=str(float(line[1])/1024/1024)
+                            log_mem.kbmemused=str(float(line[2])/1024/1024)
                             log_mem.memused=line[3]
                             log_mem.save()
                     ##Disk##
@@ -69,18 +69,42 @@ class Command(BaseCommand):
                     out=stdout.read()
                     sar_list=out.split('\n')
                     disk={}
+    
                     for sar in sar_list:
                         line=re.split(r'\s+',sar)
                         if len(line)==6:
-                            disk[line[0]]=[line[1],line[2],line[3],line[4],line[5]]
+                            #log_disk=Disk(log=log)
+                            #log_disk.mount=line[5]
+                            #log_disk.save()
+                            #disk_detail=DiskDetail(disk=log_disk)
+                            #disk_detail.used=line[2]
+                            #disk_detail.avail=line[3]
+                            #disk_detail.use=line[4]
+                            #disk_detail.save()
+                            
+                            
+                            
+                            disk[line[5]]=[line[2],line[3],line[4]]
+                    log_disk=Disk(log=log)
                     for key in disk:
                         log_disk=Disk(log=log)
-                        log_disk.dev=key
-                        log_disk.size=disk[key][0]
-                        log_disk.used=disk[key][1]
-                        log_disk.avail=disk[key][2]
-                        log_disk.use=disk[key][3]
-                        log_disk.mount=disk[key][4]
+                        log_disk.mount=key
+                        if disk[key][0].endswith('G'):
+                            log_disk.used=disk[key][0].split('G')[0]
+                        elif disk[key][0].endswith('M'):
+                            log_disk.used=str(float(disk[key][0].split('M')[0])/1024)
+                        else:
+                            log_disk.used=str(float(disk[key][0])/1024/1024)
+                        if disk[key][1].endswith('G'):
+                            log_disk.avail=disk[key][1].split('G')[0]
+                        elif disk[key][1].endswith('M'):
+                            log_disk.avail=str(float(disk[key][1].split('M')[0])/1024)
+                        else:
+                            log_disk.avail=str(float(disk[key][1])/1024/1024)
+                        
+                        log_disk.use=disk[key][2].split('%')[0]
+                        #log_disk.use=disk[key][3]
+                        # log_disk.mount=disk[key][4]
                         log_disk.save()
                     ##IO##
                     stdin,stdout,stderr=ssh.exec_command('sar -dp 1 2|grep -E "Average|平均时间" |grep -v DEV')
