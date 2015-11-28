@@ -19,14 +19,17 @@ class Command(BaseCommand):
                         ssh.connect(server.s_ip,server.s_port,server.s_user, server.s_password)
                     except Exception:
                         continue
-                    ssh.exec_command('yum install -y sysstat')
+                    if server.software.so_servername=='Debian':
+                        ssh.exec_command('apt-get install -y sysstat')
+                    else:
+                        ssh.exec_command('yum install -y sysstat')
                     ##Load##
                     stdin,stdout,stderr=ssh.exec_command('sar -q 1 2|grep -E "Average|平均时间"')
                     out=stdout.read()
                     sar_list=out.split('\n')
                     for sar in sar_list:
                         line=re.split(r'\s+',sar)
-                        if len(line)==6:
+                        if len(line)>1:
                             log_load=Load(log=log)
                             log_load.ldavg1=line[3]
                             log_load.ldavg5=line[4]
@@ -40,7 +43,7 @@ class Command(BaseCommand):
                     cpu={}
                     for sar in sar_list:
                         line=re.split(r'\s+',sar)
-                        if len(line)==8:
+                        if len(line)>1:
                             cpu[line[1]]=[line[2],line[3],line[4],line[5],line[6],line[7]]
                     for key in cpu:
                         log_cpu=Cpu(log=log)
@@ -58,7 +61,7 @@ class Command(BaseCommand):
                     sar_list=out.split('\n')
                     for sar in sar_list:
                         line=re.split(r'\s+',sar)
-                        if len(line)==8:
+                        if len(line)>1:
                             log_mem=Mem(log=log)
                             log_mem.kbmemfree=str(float(line[1])/1024/1024)
                             log_mem.kbmemused=str(float(line[2])/1024/1024)
@@ -72,7 +75,7 @@ class Command(BaseCommand):
     
                     for sar in sar_list:
                         line=re.split(r'\s+',sar)
-                        if len(line)==6:
+                        if len(line)>1:
                             #log_disk=Disk(log=log)
                             #log_disk.mount=line[5]
                             #log_disk.save()
@@ -93,14 +96,18 @@ class Command(BaseCommand):
                             log_disk.used=disk[key][0].split('G')[0]
                         elif disk[key][0].endswith('M'):
                             log_disk.used=str(float(disk[key][0].split('M')[0])/1024)
+                        elif disk[key][0].endswith('K'):
+                            log_disk.used=str(float(disk[key][0].split('K')[0])/1024/1024)
                         else:
-                            log_disk.used=str(float(disk[key][0])/1024/1024)
+                            log_disk.used=str(float(disk[key][0])/1024/1024/1024)
                         if disk[key][1].endswith('G'):
                             log_disk.avail=disk[key][1].split('G')[0]
                         elif disk[key][1].endswith('M'):
                             log_disk.avail=str(float(disk[key][1].split('M')[0])/1024)
+                        elif disk[key][1].endswith('K'):
+                            log_disk.avail=str(float(disk[key][1].split('K')[0])/1024/1024)
                         else:
-                            log_disk.avail=str(float(disk[key][1])/1024/1024)
+                            log_disk.avail=str(float(disk[key][1])/1024/1024/1024)
                         
                         log_disk.use=disk[key][2].split('%')[0]
                         #log_disk.use=disk[key][3]
@@ -113,7 +120,7 @@ class Command(BaseCommand):
                     io={}
                     for sar in sar_list:
                         line=re.split(r'\s+',sar)
-                        if len(line)==10:
+                        if len(line)>1:
                             io[line[1]]=[line[2],line[3],line[4],line[9]]
                     for key in io:
                         log_io=Io(log=log)
@@ -130,15 +137,15 @@ class Command(BaseCommand):
                     network={}
                     for sar in sar_list:
                         line=re.split(r'\s+',sar)
-                        if len(line)==9:
+                        if len(line)>1:
                             network[line[1]]=[line[2],line[3],line[4],line[5]]
                     for key in network:
                         log_network=Network(log=log)
                         log_network.dev=key
                         log_network.rxpck=network[key][0]
                         log_network.txpck=network[key][1]
-                        log_network.rxbyt=network[key][2]
-                        log_network.txbyt=network[key][3]
+                        log_network.rxbyt=str(float(network[key][2])/1024)
+                        log_network.txbyt=str(float(network[key][3])/1024)
                         log_network.save() 
                     ssh.close()
                         

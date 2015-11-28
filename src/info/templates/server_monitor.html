@@ -19,7 +19,7 @@
 							{{server.s_ip}}
 						</td>
 						<td>
-							<button class="btn btn-mini btn-primary" type="button">查看</button>
+							<button class="btn btn-mini btn-primary" type="button" onclick="location='{% url 'server_monitor_view' server.id 1 %}'">查看</button>
 						</td>
 					</tr>
 				{% endfor %}

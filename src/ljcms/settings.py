@@ -82,7 +82,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'ljcms',
-        'HOST': '192.168.1.97',
+        'HOST': '192.168.10.103',
         'USER': 'ljcms',
         'PASSWORD': 'ljcms',
     }

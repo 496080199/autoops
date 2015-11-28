@@ -849,6 +849,10 @@ def server_monitor_view(request,id,t):
     kbmemused=[]
     mount={}
     num={}
+    iodev={}
+    num1={}
+    netdev={}
+    num2={}
     for log in log_set:
         x.append(str(log.time))
         loads=log.load_set.all()
@@ -871,16 +875,31 @@ def server_monitor_view(request,id,t):
         disks=log.disk_set.all()
         n=1
         for disk in disks:
-            mount.setdefault(n,{'used':[],'avail':[]})
+            mount.setdefault(n,{'未用':[],'已用':[]})
             num.setdefault(n,disk.mount)
             
-            mount[n]['used'].append(disk.used)
-            mount[n]['avail'].append(disk.avail)
+            mount[n]['已用'].append(disk.used)
+            mount[n]['未用'].append(disk.avail)
             #mount[n]['use'].append(disk.use)
             n+=1
+        ios=log.io_set.all()
+        n1=1
+        for io in ios:
+            iodev.setdefault(n1,{'IO使用率':[]})
+            num1.setdefault(n1,io.dev)
+            iodev[n1]['IO使用率'].append(io.util)
+            n1+=1
+        networks=log.network_set.all()
+        n2=1
+        for network in networks:
+            netdev.setdefault(n2,{'接收':[],'发送':[]})
+            num2.setdefault(n2,network.dev)
+            netdev[n2]['接收'].append(network.rxbyt)
+            netdev[n2]['发送'].append(network.txbyt)
+            n2+=1
         
 
-    content={'x':x,'ldavg1':ldavg1,'ldavg5':ldavg5,'ldavg10':ldavg10,'user':user,'nice':nice,'system':system,'iowait':iowait,'steal':steal,'idle':idle,'kbmemfree':kbmemfree,'kbmemused':kbmemused,'mount':mount,"num":num}
+    content={'x':x,'ldavg1':ldavg1,'ldavg5':ldavg5,'ldavg10':ldavg10,'user':user,'nice':nice,'system':system,'iowait':iowait,'steal':steal,'idle':idle,'kbmemfree':kbmemfree,'kbmemused':kbmemused,'mount':mount,"num":num,'iodev':iodev,'num1':num1,'netdev':netdev,'num2':num2,'server_ip':server.s_ip,'id':id,'t':t}
     #return HttpResponse(num.items())
     
     return render_to_response('server_monitor_view.html',content, context_instance=RequestContext(request))

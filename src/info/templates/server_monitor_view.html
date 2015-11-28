@@ -13,7 +13,7 @@
         xAxis: {
             categories:[
             {% for data in x %}
-            "{{data}}",
+            "{{data|truncatechars:"19"}}",
             {% endfor %}
             ]
         },
@@ -37,21 +37,21 @@
             borderWidth: 0
         },
         series: [{
-            name: 'ldavg1',
+            name: '一分钟平均负载',
             data: [
             {% for data in ldavg1 %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'ldavg5',
+            name: '五分钟平均负载',
             data: [
             {% for data in ldavg5 %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'ldavg10',
+            name: '十分钟平均负载',
             data: [
             {% for data in ldavg10 %}
             {{data}},
@@ -71,7 +71,7 @@
         xAxis: {
             categories:[
             {% for data in x %}
-            "{{data}}",
+            "{{data|truncatechars:"19"}}",
             {% endfor %}
             ]
         },
@@ -152,7 +152,7 @@ $(function () {
         xAxis: {
             categories:[
             {% for data in x %}
-            "{{data}}",
+            "{{data|truncatechars:"19"}}",
             {% endfor %}
             ]
         },
@@ -172,14 +172,14 @@ $(function () {
             }
         },
             series: [{
-            name: 'kbmemfree',
+            name: '未用',
             data: [
             {% for data in kbmemfree %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'kbmemused',
+            name: '已用',
             data: [
             {% for data in kbmemused %}
             {{data}},
@@ -209,14 +209,14 @@ $(function () {
         xAxis: {
             categories: [
             {% for data in x %}
-            "{{data}}",
+            "{{data|truncatechars:"19"}}",
             {% endfor %}
             ]
         },
         yAxis: {
             min: 0,
             title: {
-                text: '百分比/单位G'
+                text: '百分比/单位GB'
             }
         },
         tooltip: {
@@ -241,25 +241,129 @@ $(function () {
 });	
 			
 </script> 
-{% endfor %}                                                                				
+{% endfor %} 
+
+{% for key3,value3 in iodev.items %}
+<script>
+$(function () {
+    $('#io{{key3}}').highcharts({
+        title: {
+            text:  {% for keyn,valuen in num1.items %}
+            		{% if key3 == keyn %}
+            			'设备：{{valuen}}'
+            		{% endif %}
+            	{% endfor %},
+            x: -20 //center
+        },
+        xAxis: {
+            categories: [
+            {% for data in x %}
+            "{{data|truncatechars:"19"}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            title: {
+                text: '百分比 (%)'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: '%'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{% for key4,value4 in value3.items %}
+        {
+            name: '{{key4}}',
+            data: [{% for data in value4 %}
+            		{{data}},
+            		{% endfor %}
+            	]
+        },
+        {% endfor %}]
+    });
+});
+</script>
+{% endfor %}
+{% for key1,value1 in netdev.items %}
+<script>
+$(function () {
+    $('#net{{key1}}').highcharts({
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: {% for keyn,valuen in num2.items %}
+            		{% if key1 == keyn %}
+            			'网卡名：{{valuen}}'
+            		{% endif %}
+            	{% endfor %}
+        },
+        xAxis: {
+            categories: [
+            {% for data in x %}
+            "{{data|truncatechars:"19"}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            title: {
+                text: '网路流量(KB)'
+            },
+            labels: {
+                formatter: function() {
+                    return this.value  +'K';
+                }
+            }
+        },
+        tooltip: {
+            pointFormat: '{series.name} produced <b>{point.y:,.0f}</b><br/>warheads in {point.x}'
+        },
+        
+        series: [{% for key2,value2 in value1.items %}{
+            name: '{{key2}}',
+            data:[{% for data in value2 %}
+            		{{data}},
+            		{% endfor %}
+            	]
+        },
+		{% endfor %}]
+    });
+});   				
+</script>
+{% endfor %}
+                                                               				
 {% endblock %}
 {% block server_act %}class="active" {% endblock %}
 {% block content %}
-<legend>{{IP}}的{{hour}}内监控图<button class="btn btn-mini" type="button">返回</button></legend>
- <label style="text-align:right"><button class="btn btn-primary" type="button">1小时</button><button class="btn btn-primary" type="button">6小时</button><button class="btn btn-primary" type="button">24小时</button></label>
+<legend>{{server_ip}}的{{t}}小时内监控图<button class="btn btn-mini" type="button" onclick="location='{% url 'server_monitor' %}'">返回</button></legend>
+ <label style="text-align:right"><button class="btn btn-primary" type="button" onclick="location='{% url 'server_monitor_view' id 1 %}'">1小时</button><button class="btn btn-primary" type="button" onclick="location='{% url 'server_monitor_view' id 6 %}'">6小时</button><button class="btn btn-primary" type="button" onclick="location='{% url 'server_monitor_view' id 24 %}'">24小时</button></label>
  
   <legend>负载</legend><br /><br /> 
-  <div id="load" style="min-width:700px;height:400px"></div>
+  <div id="load" style="min-width:600px;height:400px"></div>
   <legend>CPU</legend><br /><br /> 
-  <div id="cpu" style="min-width:700px;height:400px"></div>
+  <div id="cpu" style="min-width:600px;height:400px"></div>
   <legend>内存</legend><br /><br /> 
-  <div id="mem" style="min-width:700px;height:400px"></div>
+  <div id="mem" style="min-width:600px;height:400px"></div>
   <legend>磁盘</legend><br /><br /> 
  {% for key1 in mount.keys %}
-  <div id="disk{{key1}}" style="min-width:700px;height:400px"></div>
+  <div id="disk{{key1}}" style="min-width:600px;height:400px"></div>
   {% endfor %}
   <legend>IO</legend><br /><br /> 
-  
+  {% for key1 in iodev.keys %}
+  <div id="io{{key1}}" style="min-width:600px;height:400px"></div>
+  {% endfor %}
   <legend>网络</legend><br /><br />
-  
+  {% for key1 in netdev.keys %}
+  <div id="net{{key1}}" style="min-width:600px;height:400px"></div>
+  {% endfor %}
 {% endblock%}				
