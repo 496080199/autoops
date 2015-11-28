@@ -144,8 +144,8 @@ class Command(BaseCommand):
                         log_network.dev=key
                         log_network.rxpck=network[key][0]
                         log_network.txpck=network[key][1]
-                        log_network.rxbyt=str(float(network[key][2])/1024)
-                        log_network.txbyt=str(float(network[key][3])/1024)
+                        log_network.rxbyt=network[key][2]
+                        log_network.txbyt=network[key][3]
                         log_network.save() 
                     ssh.close()
                         
