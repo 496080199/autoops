@@ -326,7 +326,8 @@ $(function () {
             }
         },
         tooltip: {
-            pointFormat: '{series.name} produced <b>{point.y:,.0f}</b><br/>warheads in {point.x}'
+        	valueSuffix: 'KB'
+            
         },
         
         series: [{% for key2,value2 in value1.items %}{
