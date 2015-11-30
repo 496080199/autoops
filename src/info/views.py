@@ -289,7 +289,7 @@ def server_configure_new(request,id):
                 os.makedirs(path)
             file_path=path+file_name+time.strftime('_%Y%m%d%H%M%S')+'.yml'
             dst=open(file_path,'wt')
-            line='---\n- hosts: '+server.s_ip+'\n  port: '+str(server.s_port)+'\n  #hosts automatic generated,not change\n'
+            line=r'---'+'\n'+'- hosts: '+server.s_ip+'\n  port: '+str(server.s_port)+'\n  #hosts和port信息自动生成，请勿修改或重复添加\n'
             dst.write(line)
             dst.close()
             serconf.ser_name=file_name
@@ -904,3 +904,83 @@ def server_monitor_view(request,id,t):
     
     return render_to_response('server_monitor_view.html',content, context_instance=RequestContext(request))
 
+def group_monitor(request):
+    groups=Group.objects.all()
+    page_size=10
+    paginator=Paginator(groups,page_size)
+    try:
+        page=int(request.GET.get('page','1'))
+    except ValueError:
+        page=1
+    try:
+        group_list=paginator.page(page)
+    except (EmptyPage,InvalidPage):
+        group_list=paginator.page(paginator.num_pages)
+
+    context={'group_list':group_list}
+#    return render(request,'server.html',context)
+    return render_to_response('group_monitor.html', context, context_instance=RequestContext(request))
+
+def group_monitor_view(request,id,t,type):
+    group=Group.objects.get(id=id)
+    servers=group.server_set.all()
+    now=datetime.datetime.now()
+    time={
+        '1': now+datetime.timedelta(hours=-1),
+        '6': now+datetime.timedelta(hours=-6),
+        '24': now+datetime.timedelta(hours=-24)
+    }
+    x=[]
+    result={}
+    num={}
+    numm={}
+    n=1
+    
+    for server in servers:
+        log_set=server.log_set.filter(time__range=(time[str(t)],now))
+        ip=server.s_ip
+        num.setdefault(n,ip)
+        if type=='load':
+            result.setdefault(n,{type:{'ldavg1':[],'ldavg5':[],'ldavg10':[]}}) 
+            for log in log_set:
+                x.append(str(log.time))
+                for load in log.load_set.all():
+                    result[n][type]['ldavg1'].append(load.ldavg1)
+                    result[n][type]['ldavg5'].append(load.ldavg5)
+                    result[n][type]['ldavg10'].append(load.ldavg10)
+        if type=='cpu':
+            result.setdefault(n,{type:{'user':[],'nice':[],'system':[],'iowait':[],'steal':[],'idle':[]}}) 
+            for log in log_set:
+                x.append(str(log.time))
+                for cpu in log.cpu_set.all():
+                    result[n][type]['user'].append(cpu.user)
+                    result[n][type]['nice'].append(cpu.nice)
+                    result[n][type]['system'].append(cpu.system)
+                    result[n][type]['iowait'].append(cpu.iowait)
+                    result[n][type]['steal'].append(cpu.steal)
+                    result[n][type]['idle'].append(cpu.idle)
+        if type=='mem':
+            result.setdefault(n,{type:{'memfree':[],'memused':[]}}) 
+            for log in log_set:
+                x.append(str(log.time))
+                for mem in log.mem_set.all():
+                    result[n][type]['memfree'].append(mem.kbmemfree)
+                    result[n][type]['memused'].append(mem.kbmemused)
+        if type=='disk':
+            numm.setdefault(n,{})
+            result.setdefault(n,{type:{}}) 
+            for log in log_set:
+                x.append(str(log.time))
+                m=1
+                for disk in log.disk_set.all(): 
+                    result[n][type].setdefault(m,{'avail':[],'used':[]})
+                    numm[n].setdefault(m,disk.mount)
+                    result[n][type][m]['avail'].append(disk.avail)
+                    result[n][type][m]['used'].append(disk.used)
+                    m+=1          
+                    
+        n+=1
+        
+    #return HttpResponse(result.items())
+    content={'x':x,'result':result,'num':num,'type':type,'numm':numm}
+    return render_to_response('group_monitor_view.html',content, context_instance=RequestContext(request))

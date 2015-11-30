@@ -369,11 +369,17 @@ $(function () {
  <label style="text-align:right"><button class="btn btn-primary" type="button" onclick="location='{% url 'server_monitor_view' id 1 %}'">1小时</button><button class="btn btn-primary" type="button" onclick="location='{% url 'server_monitor_view' id 6 %}'">6小时</button><button class="btn btn-primary" type="button" onclick="location='{% url 'server_monitor_view' id 24 %}'">24小时</button></label>
  
   <legend>负载</legend><br /><br /> 
+  {% if x %}
   <div id="load" style="min-width:600px;height:400px"></div>
+  {% endif %}
   <legend>CPU</legend><br /><br /> 
+  {% if x %}
   <div id="cpu" style="min-width:600px;height:400px"></div>
+  {% endif %}
   <legend>内存</legend><br /><br /> 
+  {% if x %}
   <div id="mem" style="min-width:600px;height:400px"></div>
+  {% endif %}
   <legend>磁盘</legend><br /><br /> 
  {% for key1 in mount.keys %}
   <div id="disk{{key1}}" style="min-width:600px;height:400px"></div>
