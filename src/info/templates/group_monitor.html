@@ -27,12 +27,12 @@
 					    {% endfor %}
 						</td>
 						<td>
-							<button class="btn btn-mini btn-primary" type="button" onclick="location='#'">查看负载</button>
-							<button class="btn btn-mini btn-primary" type="button" onclick="location='#'">查看CPU</button>
-							<button class="btn btn-mini btn-primary" type="button" onclick="location='#'">查看内存</button>
-							<button class="btn btn-mini btn-primary" type="button" onclick="location='#'">查看磁盘</button>
-							<button class="btn btn-mini btn-primary" type="button" onclick="location='#'">查看IO</button>
-							<button class="btn btn-mini btn-primary" type="button" onclick="location='#'">查看网络</button>
+							<button class="btn btn-mini btn-primary" type="button" onclick="location='{% url 'group_monitor_view' group.id 1 'load' %}'">查看负载</button>
+							<button class="btn btn-mini btn-primary" type="button" onclick="location='{% url 'group_monitor_view' group.id 1 'cpu' %}'">查看CPU</button>
+							<button class="btn btn-mini btn-primary" type="button" onclick="location='{% url 'group_monitor_view' group.id 1 'mem' %}'">查看内存</button>
+							<button class="btn btn-mini btn-primary" type="button" onclick="location='{% url 'group_monitor_view' group.id 1 'disk' %}'">查看磁盘</button>
+							<button class="btn btn-mini btn-primary" type="button" onclick="location='{% url 'group_monitor_view' group.id 1 'io' %}'">查看IO</button>
+							<button class="btn btn-mini btn-primary" type="button" onclick="location='{% url 'group_monitor_view' group.id 1 'network' %}'">查看网络</button>
 						</td>
 					</tr>
 				{% endfor %}

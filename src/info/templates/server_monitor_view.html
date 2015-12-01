@@ -95,42 +95,42 @@
             borderWidth: 0
         },
         series: [{
-            name: 'user',
+            name: '用户',
             data: [
             {% for data in user %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'nice',
+            name: '优先级',
             data: [
             {% for data in nice %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'system',
+            name: '系统',
             data: [
             {% for data in system %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'iowait',
+            name: '读写等待',
             data: [
             {% for data in iowait %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'steal',
+            name: '虚拟',
             data: [
             {% for data in steal %}
             {{data}},
             {% endfor %}
             ]
         }, {
-            name: 'idle',
+            name: '空闲',
             data: [
             {% for data in idle %}
             {{data}},
@@ -342,26 +342,7 @@ $(function () {
 });   				
 </script>
 {% endfor %}
-<style type="text/css">
-.backToTop {
- display: none;
- width: 50px;
- line-height: 1.2;
- padding: 5px 0;
- background-color: #0D19FF;
- color: #fff;
- font-size: 20px;
- text-align: center;
- position: fixed;
- _position: absolute;
- right: 80px;
- bottom: 100px;
- _bottom: "auto";
- cursor: pointer;
- opacity: .6;
- filter: Alpha(opacity=60);
-}
-</style>                                                               				
+                                          				
 {% endblock %}
 {% block server_act %}class="active" {% endblock %}
 {% block content %}
@@ -392,22 +373,5 @@ $(function () {
   {% for key1 in netdev.keys %}
   <div id="net{{key1}}" style="min-width:600px;height:400px"></div>
   {% endfor %}
-  <div style="height:2000px;"></div>
-<script type="text/javascript">
-(function() {
-    var $backToTopTxt = "返回顶部", $backToTopEle = $('<div class="backToTop"></div>').appendTo($("body"))
-        .text($backToTopTxt).attr("title", $backToTopTxt).click(function() {
-            $("html, body").animate({ scrollTop: 0 }, 120);
-    }), $backToTopFun = function() {
-        var st = $(document).scrollTop(), winh = $(window).height();
-        (st > 0)? $backToTopEle.show(): $backToTopEle.hide();
-        //IE6下的定位
-        if (!window.XMLHttpRequest) {
-            $backToTopEle.css("top", st + winh - 166);
-        }
-    };
-    $(window).bind("scroll", $backToTopFun);
-    $(function() { $backToTopFun(); });
-})();
-</script>
+ 
 {% endblock%}				

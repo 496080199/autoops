@@ -8,6 +8,27 @@
 <script src="//cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/bootstrap/2.3.2/js/bootstrap.js"></script>
 <script src="//cdn.bootcss.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+
+<style type="text/css">
+.backToTop {
+ display: none;
+ width: 50px;
+ line-height: 1.2;
+ padding: 5px 0;
+ background-color: #04c;
+ color: #fff;
+ font-size: 20px;
+ text-align: center;
+ position: fixed;
+ _position: absolute;
+ right: 0px;
+ bottom: 100px;
+ _bottom: "auto";
+ cursor: pointer;
+ opacity: .6;
+ filter: Alpha(opacity=60);
+}
+</style>                     
 {% block head %} {% endblock %}
 <title> {% block title %}LJCMS{% endblock %} - power by clj</title>
 </head>
@@ -35,22 +56,22 @@
 				<li {% block monitor_act %}{% endblock%}>
 					<a href="{% url 'server_monitor' %}">监控</a>
 				</li>
-				<li class="divider">
-				</li>
-				<li>
-					<a href="#">帮助</a>
-				</li>
+				
 			</ul>
 		</div>
 		<div class="span6">
 		{% block nav %}{% endblock %}
 		</div>
 		<div class="span4">
+		
 			<h2>
 				<span>提示</span>
 			</h2>
 			<p>
-				如何如何操作
+			{% for t in tip %}
+			{{t}}<br>
+			{% endfor %}
+			
 			</p>
 		</div>
 	</div>
@@ -62,5 +83,24 @@
 		</div>
 	</div>
 </div>
+
+ <div style="height:2000px;"></div>
+<script type="text/javascript">
+(function() {
+    var $backToTopTxt = "返回顶部", $backToTopEle = $('<div class="backToTop"></div>').appendTo($("body"))
+        .text($backToTopTxt).attr("title", $backToTopTxt).click(function() {
+            $("html, body").animate({ scrollTop: 0 }, 120);
+    }), $backToTopFun = function() {
+        var st = $(document).scrollTop(), winh = $(window).height();
+        (st > 0)? $backToTopEle.show(): $backToTopEle.hide();
+        //IE6下的定位
+        if (!window.XMLHttpRequest) {
+            $backToTopEle.css("top", st + winh - 166);
+        }
+    };
+    $(window).bind("scroll", $backToTopFun);
+    $(function() { $backToTopFun(); });
+})();
+</script>
 </body>
 </html>

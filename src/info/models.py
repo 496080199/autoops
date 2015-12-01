@@ -5,10 +5,10 @@ from django.db.models.fields.related import OneToOneField
 from django.forms.models import ModelForm, ModelMultipleChoiceField
 from django.forms.widgets import CheckboxSelectMultiple
 from ckeditor.fields import RichTextFormField
-import os,chardet,random,re
-from django.http.response import HttpResponse
-from ljcms.settings import MEDIA_ROOT
-from ckeditor import widgets
+import os,re
+#from django.http.response import HttpResponse
+#from ljcms.settings import MEDIA_ROOT
+#from ckeditor import widgets
 
 
 # Create your models here.
@@ -529,6 +529,14 @@ class Network(models.Model):
     log=models.ForeignKey(Log) 
     class Meta:
         db_table="network"
+        
+        
+class Tip(models.Model):
+    method=models.CharField(max_length=200,unique=True)
+    content=models.CharField(max_length=1000)
+    class Meta:
+        db_table="tip"
+    
         
         
 

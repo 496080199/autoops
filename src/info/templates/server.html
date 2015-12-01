@@ -27,7 +27,7 @@
 							服务器端口
 						</th>
 						<th>
-						    服务器状态
+						    SSH状态
 						</th>
 						<th>
 						    操作
@@ -64,7 +64,7 @@
 							{{server.s_status}}
 						</td>
 						<td>
-							 <button class="btn btn-primary btn-mini" type="button" onclick="location='/edit/{{server.s_ip}}'">更新</button> <button class="btn btn-primary btn-mini" type="button" onclick="location='/del/{{server.s_ip}}'">删除</button>
+							 <button class="btn btn-primary btn-mini" type="button" onclick="location='/edit/{{server.s_ip}}'">更新</button> <button class="btn btn-primary btn-mini" type="button" onclick="javascript:if (confirm('是否要删除?')) location.href='{% url 'server_del' server.s_ip %}';">删除</button>
 						</td>
 					</tr>
 				{% endfor %}
@@ -89,4 +89,6 @@
 				{% endif %}
 				</ul>
 			</div>
-{% endblock%}				
+{% endblock%}
+
+			

@@ -10,7 +10,7 @@ from ljcms.settings import MEDIA_ROOT, MEDIA_URL
 #from ansible.playbook import PlayBook
 #from ansible import callbacks
 #from ansible import utils
-import os,time,random,stat,paramiko,commands,shutil
+import os,chardet,time,random,stat,paramiko,commands,shutil
 import datetime
 
 
@@ -31,8 +31,12 @@ def server(request):
         server_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         server_list=paginator.page(paginator.num_pages)
+        
+    tip=get_tip('server')
+    #serverfields=Server._meta.get_all_field_names()
 
-    context={'server_list':server_list}
+    context={'server_list':server_list,'tip':tip}
+    #return HttpResponse(serverfields)
 #    return render(request,'server.html',context)
     return render_to_response('server.html', context, context_instance=RequestContext(request))
 
@@ -52,7 +56,8 @@ def server_add(request):
             return HttpResponseRedirect('/')        
     else:
         form=ServerForm()
-    return render_to_response('server_add.html',{'form':form,})
+        tip=get_tip('server_add')
+    return render_to_response('server_add.html',{'form':form,'tip':tip})
 def server_edit(request,ip):
     server_now=Server.objects.get(s_ip=ip)
     if request.method=='POST':
@@ -64,7 +69,9 @@ def server_edit(request,ip):
             return HttpResponseRedirect('/') 
     else:
         form=ServerForm(instance=server_now)
-    return render(request,'server_edit.html',{'form':form})
+        tip=get_tip('server_edit')
+
+    return render(request,'server_edit.html',{'form':form,'tip':tip})
 def server_infoupdate(ip):
     server_now=Server.objects.get(s_ip=ip)
     fp=open("/tmp/host",'w')
@@ -148,8 +155,8 @@ def group(request):
         group_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         group_list=paginator.page(paginator.num_pages)
-
-    return render(request,'group.html',{'group_list':group_list})
+    tip=get_tip('group')
+    return render(request,'group.html',{'group_list':group_list,'tip':tip})
 def group_add(request):
     if request.method=='POST':
         form=GroupForm(request.POST)
@@ -158,7 +165,8 @@ def group_add(request):
             return HttpResponseRedirect('/group/') 
     else:
         form=GroupForm()
-    return render_to_response('group_add.html',{'form':form,}) 
+    tip=get_tip('group_add')
+    return render_to_response('group_add.html',{'form':form,'tip':tip}) 
 def group_edit(request,id):
     group_now=Group.objects.get(id=id)
     if request.method=='POST':
@@ -168,7 +176,8 @@ def group_edit(request,id):
             return HttpResponseRedirect('/group/')
     else:
         form=GroupForm(instance=group_now)
-    return render_to_response('group_edit.html',{'form':form,'id':id,})
+    tip=get_tip('group_edit')
+    return render_to_response('group_edit.html',{'form':form,'id':id,'tip':tip})
 def group_del(request,id):
     group_now=Group.objects.get(id=id)
     for gro_conf in group_now.groupconfigure_set.all():
@@ -223,8 +232,8 @@ def hardware(request):
         hardware_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         hardware_list=paginator.page(paginator.num_pages)
-
-    context={'hardware_list':hardware_list}
+    tip=get_tip('hardware')
+    context={'hardware_list':hardware_list,'tip':tip}
     return render_to_response('hardware.html', context, context_instance=RequestContext(request))
 #    return render(request,'hardware.html')
 def software(request):
@@ -240,7 +249,8 @@ def software(request):
         software_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         software_list=paginator.page(paginator.num_pages)
-    context={'software_list':software_list}
+    tip=get_tip('software')
+    context={'software_list':software_list,'tip':tip}
     return render_to_response('software.html', context, context_instance=RequestContext(request))
 
 def server_configure(request):
@@ -255,7 +265,8 @@ def server_configure(request):
         server_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         server_list=paginator.page(paginator.num_pages)
-    context={'server_list':server_list}
+    tip=get_tip('server_configure')
+    context={'server_list':server_list,'tip':tip}
     return render_to_response('server_configure.html',context, context_instance=RequestContext(request))
 
 def server_configure_manage(request,id):
@@ -273,7 +284,8 @@ def server_configure_manage(request,id):
         server_configure_list=paginator.page(paginator.num_pages)
     down_path=MEDIA_URL
     upload_path=MEDIA_ROOT+'/'
-    context={'server_configure_list':server_configure_list,'server':server,'down_path':down_path,'upload_path':upload_path}
+    tip=get_tip('server_configure_manage')
+    context={'server_configure_list':server_configure_list,'server':server,'down_path':down_path,'upload_path':upload_path,'tip':tip}
     return render_to_response('server_configure_manage.html',context, context_instance=RequestContext(request))
 
 def server_configure_new(request,id):
@@ -303,7 +315,8 @@ def server_configure_new(request,id):
             
     else:
         form=ServerConfigureForm()
-    return render_to_response('server_configure_new.html',{'form':form,'server':server}) 
+    tip=get_tip('server_configure_manage_new')
+    return render_to_response('server_configure_new.html',{'form':form,'server':server,'tip':tip}) 
 
 def server_configure_edit(request,id):
     serconf=ServerConfigure.objects.get(id=id)
@@ -326,7 +339,8 @@ def server_configure_edit(request,id):
         content=serconf_file.read().decode("utf8")
         form=ServerConfigureEditForm({'ser_filecontent':content})
         serconf_file.close()
-    return render_to_response('server_configure_edit.html',{'form':form,'serconf_ser_name':serconf.ser_name,'id':id,'server_id':server_id,})
+    tip=get_tip('server_configure_manage_edit')
+    return render_to_response('server_configure_edit.html',{'form':form,'serconf_ser_name':serconf.ser_name,'id':id,'server_id':server_id,'tip':tip})
 
 def server_configure_del(request,id):
     serconf=ServerConfigure.objects.get(id=id)
@@ -368,11 +382,14 @@ def server_configure_action(request,id):
         action_result=r[1]
         #if r['ok'] > 0:
         #    action_result="执行成功"
-        content={'action_result':action_result,'server_id':server_id}
+        tip=get_tip('server_configure_result')
+        content={'action_result':action_result,'server_id':server_id,'tip':tip}
+        
         return render_to_response('server_configure_result.html',content)
     else:
         form=ServerConfigureActionForm({'ser_name':serconf.ser_name})
-    return render_to_response('server_configure_action.html',{'form':form,'id':id,'server_ip':serconf.ser_server.s_ip,'server_id':server_id})
+    tip=get_tip('server_configure_action')
+    return render_to_response('server_configure_action.html',{'form':form,'id':id,'server_ip':serconf.ser_server.s_ip,'server_id':server_id,'tip':tip})
 def server_configure_time(request,id):
     server_inv_update()
     serconf=ServerConfigure.objects.get(id=id)
@@ -423,7 +440,8 @@ def server_configure_time(request,id):
             serconf_time.ser_leapyear=True
         serconf_time.save()
         form=ServerConfigureTimeForm(instance=serconf.serverconfiguretime)
-    return render_to_response('server_configure_time.html',{'form':form,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id})
+    tip=get_tip('server_configure_time')
+    return render_to_response('server_configure_time.html',{'form':form,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id,'tip':tip})
     
 def server_configure_time_log(request,id):  
     serconf=ServerConfigure.objects.get(id=id)
@@ -442,7 +460,8 @@ def server_configure_time_log(request,id):
         log_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         log_list=paginator.page(paginator.num_pages)
-    return render_to_response('server_configure_time_log.html',{'log_list':log_list,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id})
+    tip=get_tip('server_configure_time_log')
+    return render_to_response('server_configure_time_log.html',{'log_list':log_list,'serconf_name':serconf.ser_name,'id':id,'server_id':server_id,'tip':tip})
 def server_configure_time_log_open(request,id,log): 
     serconf=ServerConfigure.objects.get(id=id)
     log_path=MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name+'/'
@@ -453,7 +472,8 @@ def server_configure_time_log_open(request,id,log):
     except Exception,e:
         print e
     f.close()
-    return render_to_response('server_configure_time_logresult.html',{'result':result,'log':log,'id':id})
+    tip=get_tip('server_configure_time_logresult')
+    return render_to_response('server_configure_time_logresult.html',{'result':result,'log':log,'id':id,'tip':tip})
 def server_configure_time_log_del(request,id,log):
     serconf=ServerConfigure.objects.get(id=id)
     log_path=MEDIA_ROOT+'/yml/time/server/'+serconf.ser_name+'/'
@@ -497,7 +517,8 @@ def group_configure(request):
         group_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         group_list=paginator.page(paginator.num_pages)
-    context={'group_list':group_list}
+    tip=get_tip('group_configure')
+    context={'group_list':group_list,'tip':tip}
     return render_to_response('group_configure.html',context, context_instance=RequestContext(request))
 
 def group_configure_manage(request,id):
@@ -515,7 +536,8 @@ def group_configure_manage(request,id):
         group_configure_list=paginator.page(paginator.num_pages)
     down_path=MEDIA_URL
     upload_path=MEDIA_ROOT+'/'
-    context={'group_configure_list':group_configure_list,'group':group,'down_path':down_path,'upload_path':upload_path}
+    tip=get_tip('group_configure_manage')
+    context={'group_configure_list':group_configure_list,'group':group,'down_path':down_path,'upload_path':upload_path,'tip':tip}
     return render_to_response('group_configure_manage.html',context, context_instance=RequestContext(request))
 
 def group_configure_new(request,id):
@@ -544,7 +566,8 @@ def group_configure_new(request,id):
             
     else:
         form=GroupConfigureForm()
-    return render_to_response('group_configure_new.html',{'form':form,'group':group}) 
+    tip=get_tip('group_configure_new')
+    return render_to_response('group_configure_new.html',{'form':form,'group':group,'tip':tip}) 
 
 def group_configure_edit(request,id):
     groconf=GroupConfigure.objects.get(id=id)
@@ -567,7 +590,8 @@ def group_configure_edit(request,id):
         content=groconf_file.read().decode("utf8")
         form=GroupConfigureEditForm({'gro_filecontent':content})
         groconf_file.close()
-    return render_to_response('group_configure_edit.html',{'form':form,'groconf_gro_name':groconf.gro_name,'id':id,'group_id':group_id,})
+    tip=get_tip('group_configure_edit')
+    return render_to_response('group_configure_edit.html',{'form':form,'groconf_gro_name':groconf.gro_name,'id':id,'group_id':group_id,'tip':tip})
 
 def group_configure_del(request,id):
     groconf=GroupConfigure.objects.get(id=id)
@@ -620,7 +644,8 @@ def group_configure_action(request,id):
         return render_to_response('group_configure_result.html',content)
     else:
         form=GroupConfigureActionForm({'gro_name':groconf.gro_name})
-    return render_to_response('group_configure_action.html',{'form':form,'id':id,'g_name':groconf.gro_group.g_name,'group_id':group_id})
+    tip=get_tip('group_configure_action')
+    return render_to_response('group_configure_action.html',{'form':form,'id':id,'g_name':groconf.gro_group.g_name,'group_id':group_id,'tip':tip})
 
 def group_configure_time(request,id):
     group_inv_update()
@@ -672,7 +697,8 @@ def group_configure_time(request,id):
             groconf_time.gro_leapyear=True
         groconf_time.save()
         form=GroupConfigureTimeForm(instance=groconf.groupconfiguretime)
-    return render_to_response('group_configure_time.html',{'form':form,'groconf_name':groconf.gro_name,'id':id,'group_id':group_id})
+    tip=get_tip('group_configure_time')
+    return render_to_response('group_configure_time.html',{'form':form,'groconf_name':groconf.gro_name,'id':id,'group_id':group_id,'tip':tip})
     
 def group_configure_time_log(request,id):  
     groconf=GroupConfigure.objects.get(id=id)
@@ -691,7 +717,8 @@ def group_configure_time_log(request,id):
         log_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         log_list=paginator.page(paginator.num_pages)
-    return render_to_response('group_configure_time_log.html',{'log_list':log_list,'groconf_name':groconf.gro_name,'id':id,'group_id':group_id})
+    tip=get_tip('group_configure_time_log')
+    return render_to_response('group_configure_time_log.html',{'log_list':log_list,'groconf_name':groconf.gro_name,'id':id,'group_id':group_id,'tip':tip})
 def group_configure_time_log_open(request,id,log): 
     groconf=GroupConfigure.objects.get(id=id)
     log_path=MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name+'/'
@@ -702,7 +729,8 @@ def group_configure_time_log_open(request,id,log):
     except Exception,e:
         print e
     f.close()
-    return render_to_response('group_configure_time_logresult.html',{'result':result,'log':log,'id':id})
+    tip=get_tip('group_configure_time_logresult')
+    return render_to_response('group_configure_time_logresult.html',{'result':result,'log':log,'id':id,'tip':tip})
 def group_configure_time_log_del(request,id,log):
     groconf=GroupConfigure.objects.get(id=id)
     log_path=MEDIA_ROOT+'/yml/time/group/'+groconf.gro_name+'/'
@@ -745,7 +773,8 @@ def filelist(request):
         file_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         file_list=paginator.page(paginator.num_pages)
-    context={'file_list':file_list}
+    tip=get_tip('filelist')
+    context={'file_list':file_list,'tip':tip}
     return render_to_response('filelist.html',context, context_instance=RequestContext(request))
 def file_upload(request):
     if request.method=='POST':
@@ -757,7 +786,8 @@ def file_upload(request):
             return HttpResponseRedirect('/filelist/') 
     else:
         form=FileForm()
-    return render_to_response('file_upload.html',{'form':form,}) 
+    tip=get_tip('file_upload')
+    return render_to_response('file_upload.html',{'form':form,'tip':tip}) 
 def handle_upload(f):
     try:
         path=MEDIA_ROOT+"/yml/file/"
@@ -799,7 +829,8 @@ def file_edit(request,id):
             return render_to_response('file_unedit.html')
         form=FileEditForm({'f_filecontent':content})
         f_file.close()
-    return render_to_response('file_edit.html',{'form':form,'id':id,'path':path,'f_path':f_path})
+        tip=get_tip('file_edit')
+    return render_to_response('file_edit.html',{'form':form,'id':id,'path':path,'f_path':f_path,'tip':tip})
 def file_del(request,id):
     f=File.objects.get(id=id)
     try:
@@ -821,8 +852,8 @@ def server_monitor(request):
         server_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         server_list=paginator.page(paginator.num_pages)
-
-    context={'server_list':server_list}
+    tip=get_tip('server_monitor')
+    context={'server_list':server_list,'tip':tip}
 #    return render(request,'server.html',context)
     return render_to_response('server_monitor.html', context, context_instance=RequestContext(request))
     
@@ -885,9 +916,9 @@ def server_monitor_view(request,id,t):
         ios=log.io_set.all()
         n1=1
         for io in ios:
-            iodev.setdefault(n1,{'IO使用率':[]})
+            iodev.setdefault(n1,{'利用率':[]})
             num1.setdefault(n1,io.dev)
-            iodev[n1]['IO使用率'].append(io.util)
+            iodev[n1]['利用率'].append(io.util)
             n1+=1
         networks=log.network_set.all()
         n2=1
@@ -898,8 +929,8 @@ def server_monitor_view(request,id,t):
             netdev[n2]['发送'].append(network.txbyt)
             n2+=1
         
-
-    content={'x':x,'ldavg1':ldavg1,'ldavg5':ldavg5,'ldavg10':ldavg10,'user':user,'nice':nice,'system':system,'iowait':iowait,'steal':steal,'idle':idle,'kbmemfree':kbmemfree,'kbmemused':kbmemused,'mount':mount,"num":num,'iodev':iodev,'num1':num1,'netdev':netdev,'num2':num2,'server_ip':server.s_ip,'id':id,'t':t}
+    tip=get_tip('server_monitor_view')
+    content={'x':x,'ldavg1':ldavg1,'ldavg5':ldavg5,'ldavg10':ldavg10,'user':user,'nice':nice,'system':system,'iowait':iowait,'steal':steal,'idle':idle,'kbmemfree':kbmemfree,'kbmemused':kbmemused,'mount':mount,"num":num,'iodev':iodev,'num1':num1,'netdev':netdev,'num2':num2,'server_ip':server.s_ip,'id':id,'t':t,'tip':tip}
     #return HttpResponse(num.items())
     
     return render_to_response('server_monitor_view.html',content, context_instance=RequestContext(request))
@@ -916,8 +947,8 @@ def group_monitor(request):
         group_list=paginator.page(page)
     except (EmptyPage,InvalidPage):
         group_list=paginator.page(paginator.num_pages)
-
-    context={'group_list':group_list}
+    tip=get_tip('group_monitor')
+    context={'group_list':group_list,'tip':tip}
 #    return render(request,'server.html',context)
     return render_to_response('group_monitor.html', context, context_instance=RequestContext(request))
 
@@ -937,35 +968,36 @@ def group_monitor_view(request,id,t,type):
     n=1
     
     for server in servers:
+        x=[]
         log_set=server.log_set.filter(time__range=(time[str(t)],now))
         ip=server.s_ip
         num.setdefault(n,ip)
         if type=='load':
-            result.setdefault(n,{type:{'ldavg1':[],'ldavg5':[],'ldavg10':[]}}) 
+            result.setdefault(n,{type:{'一分钟平均负载':[],'五分钟平均负载':[],'十分钟平均负载':[]}}) 
             for log in log_set:
                 x.append(str(log.time))
                 for load in log.load_set.all():
-                    result[n][type]['ldavg1'].append(load.ldavg1)
-                    result[n][type]['ldavg5'].append(load.ldavg5)
-                    result[n][type]['ldavg10'].append(load.ldavg10)
+                    result[n][type]['一分钟平均负载'].append(load.ldavg1)
+                    result[n][type]['五分钟平均负载'].append(load.ldavg5)
+                    result[n][type]['十分钟平均负载'].append(load.ldavg10)
         if type=='cpu':
-            result.setdefault(n,{type:{'user':[],'nice':[],'system':[],'iowait':[],'steal':[],'idle':[]}}) 
+            result.setdefault(n,{type:{'用户':[],'优先级':[],'系统':[],'读写等待':[],'虚拟':[],'空闲':[]}}) 
             for log in log_set:
                 x.append(str(log.time))
                 for cpu in log.cpu_set.all():
-                    result[n][type]['user'].append(cpu.user)
-                    result[n][type]['nice'].append(cpu.nice)
-                    result[n][type]['system'].append(cpu.system)
-                    result[n][type]['iowait'].append(cpu.iowait)
-                    result[n][type]['steal'].append(cpu.steal)
-                    result[n][type]['idle'].append(cpu.idle)
+                    result[n][type]['用户'].append(cpu.user)
+                    result[n][type]['优先级'].append(cpu.nice)
+                    result[n][type]['系统'].append(cpu.system)
+                    result[n][type]['读写等待'].append(cpu.iowait)
+                    result[n][type]['虚拟'].append(cpu.steal)
+                    result[n][type]['空闲'].append(cpu.idle)
         if type=='mem':
-            result.setdefault(n,{type:{'memfree':[],'memused':[]}}) 
+            result.setdefault(n,{type:{'未用':[],'已用':[]}}) 
             for log in log_set:
                 x.append(str(log.time))
                 for mem in log.mem_set.all():
-                    result[n][type]['memfree'].append(mem.kbmemfree)
-                    result[n][type]['memused'].append(mem.kbmemused)
+                    result[n][type]['未用'].append(mem.kbmemfree)
+                    result[n][type]['已用'].append(mem.kbmemused)
         if type=='disk':
             numm.setdefault(n,{})
             result.setdefault(n,{type:{}}) 
@@ -973,14 +1005,45 @@ def group_monitor_view(request,id,t,type):
                 x.append(str(log.time))
                 m=1
                 for disk in log.disk_set.all(): 
-                    result[n][type].setdefault(m,{'avail':[],'used':[]})
+                    result[n][type].setdefault(m,{'未用':[],'已用':[]})
                     numm[n].setdefault(m,disk.mount)
-                    result[n][type][m]['avail'].append(disk.avail)
-                    result[n][type][m]['used'].append(disk.used)
+                    result[n][type][m]['未用'].append(disk.avail)
+                    result[n][type][m]['已用'].append(disk.used)
                     m+=1          
-                    
+        if type=='io':
+            numm.setdefault(n,{})
+            result.setdefault(n,{type:{}}) 
+            for log in log_set:
+                x.append(str(log.time))
+                m=1
+                for io in log.io_set.all(): 
+                    result[n][type].setdefault(m,{'利用率':[]})
+                    numm[n].setdefault(m,io.dev)
+                    result[n][type][m]['利用率'].append(io.util)
+                    m+=1 
+        if type=='network':
+            numm.setdefault(n,{})
+            result.setdefault(n,{type:{}}) 
+            for log in log_set:
+                x.append(str(log.time))
+                m=1
+                for network in log.network_set.all(): 
+                    result[n][type].setdefault(m,{'接收':[],'发送':[]})
+                    numm[n].setdefault(m,network.dev)
+                    result[n][type][m]['接收'].append(network.rxbyt)
+                    result[n][type][m]['发送'].append(network.txbyt)
+                    m+=1             
         n+=1
         
-    #return HttpResponse(result.items())
-    content={'x':x,'result':result,'num':num,'type':type,'numm':numm}
+    #return HttpResponse(x)
+    tip=get_tip('group_monitor_view')
+    content={'x':x,'result':result,'num':num,'type':type,'numm':numm,'group_name':group.g_name,'id':id,'t':t,'tip':tip}
     return render_to_response('group_monitor_view.html',content, context_instance=RequestContext(request))
+
+def get_tip(method):
+    try:
+        tip=Tip.objects.get(method=method)
+    except Exception:
+        tip=Tip.objects.get(method='default')
+
+    return tip.content.split(';')

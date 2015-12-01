@@ -3,7 +3,7 @@
 <script src="//cdn.bootcss.com/jquery/1.8.3/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/highcharts/4.1.9/highcharts.js"></script>
 <script src="//cdn.bootcss.com/highcharts/4.1.9/modules/exporting.js"></script>
-{% if type == 'load' %}
+{% if type == 'load' and x %}
 {% for key1,value1 in result.items %}
 <script>
     $(function () {
@@ -58,9 +58,11 @@
     });
 });
   </script>
+  
   {% endfor %}
   {% endif %}
-  {% if type == 'cpu' %}
+  
+  {% if type == 'cpu' and x %}
   {% for key1,value1 in result.items %}
    <script>
     $(function () {
@@ -118,7 +120,7 @@
   {% endfor %}
   {% endif %}
   
-  {% if type == 'mem' %}
+  {% if type == 'mem' and x %}
   {% for key1,value1 in result.items %}
    <script>
 $(function () {
@@ -173,7 +175,7 @@ $(function () {
 </script> 
   {% endfor %}
   {% endif %}
-  {% if type == 'disk' %}
+  {% if type == 'disk' and x %}
   {% for key1,value1 in result.items %} 
   {% for key2,value2 in value1.items %}
   {% for key3,value3 in value2.items %} 
@@ -224,11 +226,123 @@ $(function () {
   {% endfor %}
   {% endfor %}
   {% endif %}
+  {% if type == 'io' and x %}
+  {% for key1,value1 in result.items %} 
+  {% for key2,value2 in value1.items %}
+  {% for key3,value3 in value2.items %} 
+  <script>
+$(function () {
+    $('#io{{key1}}-{{key3}}').highcharts({
+        title: {
+            text:  {% for keyn,valuen in num.items %}{% if key1 == keyn %}'{{valuen}}的设备：{% endif %}{% endfor %}{% for keyn1,valuen1 in numm.items %}{% if key1 == keyn1 %}{% for keyn2,valuen2 in valuen1.items %}{% if key3 == keyn2 %}{{valuen2}}'{% endif %}{% endfor %}{% endif %}{% endfor %},
+            x: -20 //center
+        },
+        xAxis: {
+            categories: [
+            {% for data in x %}
+            "{{data|truncatechars:"19"}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            title: {
+                text: '百分比 (%)'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: '%'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{% for key4,value4 in value3.items %}
+        {
+            name: '{{key4}}',
+            data: [{% for data in value4 %}
+            		{{data}},
+            		{% endfor %}
+            	]
+        },
+        {% endfor %}]
+    });
+});
+</script>
+  {% endfor %}
+  {% endfor %}
+  {% endfor %}
+  {% endif %}
+  
+  {% if type == 'network' and x%}
+  {% for key1,value1 in result.items %} 
+  {% for key2,value2 in value1.items %}
+  {% for key3,value3 in value2.items %} 
+ <script>
+$(function () {
+    $('#net{{key1}}-{{key3}}').highcharts({
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: {% for keyn,valuen in num.items %}{% if key1 == keyn %}'{{valuen}}的网卡：{% endif %}{% endfor %}{% for keyn1,valuen1 in numm.items %}{% if key1 == keyn1 %}{% for keyn2,valuen2 in valuen1.items %}{% if key3 == keyn2 %}{{valuen2}}'{% endif %}{% endfor %}{% endif %}{% endfor %},
+        },
+        xAxis: {
+            categories: [
+            {% for data in x %}
+            "{{data|truncatechars:"19"}}",
+            {% endfor %}
+            ]
+        },
+        yAxis: {
+            title: {
+                text: '网路流量(KB)'
+            },
+            labels: {
+                formatter: function() {
+                    return this.value  +'K';
+                }
+            }
+        },
+        tooltip: {
+        	valueSuffix: 'KB'
+            
+        },
+        
+        series: [{% for key4,value4 in value3.items %}{
+            name: '{{key4}}',
+            data:[{% for data in value4 %}
+            		{{data}},
+            		{% endfor %}
+            	]
+        },
+		{% endfor %}]
+    });
+});   				
+</script>
+  {% endfor %}
+  {% endfor %}
+  {% endfor %}
+  {% endif %}
 {% endblock %}
 {% block group_act %}class="active" {% endblock %}
 {% block content %}
-<legend>{{group_name}}的{{t}}小时内{{type}}监控图<button class="btn btn-mini" type="button" onclick="location='{% url 'group_monitor' %}'">返回</button></legend>
- <label style="text-align:right"><button class="btn btn-primary" type="button" onclick="location='#'">1小时</button><button class="btn btn-primary" type="button" onclick="location='#'">6小时</button><button class="btn btn-primary" type="button" onclick="location='#'">24小时</button></label>
+<legend>{{group_name}}组{{t}}小时内{{type}}监控图<button class="btn btn-mini" type="button" onclick="location='{% url 'group_monitor' %}'">返回</button></legend>
+<label>
+							<button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id t 'load' %}'">负载</button>
+							<button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id t 'cpu' %}'">CPU</button>
+							<button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id t 'mem' %}'">内存</button>
+							<button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id t 'disk' %}'">磁盘</button>
+							<button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id t 'io' %}'">IO</button>
+							<button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id t 'network' %}'">网络</button
+</label>
+ <label style="text-align:right"><button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id 1 type %}'">1小时</button><button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id 6 type %}'">6小时</button><button class="btn btn-primary" type="button" onclick="location='{% url 'group_monitor_view' id 24 type %}'">24小时</button></label>
   {% if type == 'load' %}
   <legend>负载</legend><br /><br /> 
   {% for key1 in result.keys %}
@@ -262,6 +376,32 @@ $(function () {
   {% for key2,value2 in value1.items %}
   {% for key3 in value2.keys %}
   <div id="disk{{key1}}-{{key3}}" style="min-width:600px;height:400px"></div>
+  <br>
+  <br>
+  {% endfor %}
+  {% endfor %}
+  {% endfor %}
+  {% endif %}
+  
+  {% if type == 'io' %}
+  <legend>IO</legend><br /><br /> 
+  {% for key1,value1 in result.items %}
+  {% for key2,value2 in value1.items %}
+  {% for key3 in value2.keys %}
+  <div id="io{{key1}}-{{key3}}" style="min-width:600px;height:400px"></div>
+  <br>
+  <br>
+  {% endfor %}
+  {% endfor %}
+  {% endfor %}
+  {% endif %}
+  
+    {% if type == 'network' %}
+  <legend>网络</legend><br /><br /> 
+  {% for key1,value1 in result.items %}
+  {% for key2,value2 in value1.items %}
+  {% for key3 in value2.keys %}
+  <div id="net{{key1}}-{{key3}}" style="min-width:600px;height:400px"></div>
   <br>
   <br>
   {% endfor %}
