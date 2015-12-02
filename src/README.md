@@ -55,4 +55,4 @@ nohup python manage.py runserver 0.0.0.0:8000 &
 使用：
 打开浏览器，输入网址：http://服务安装的IP:8000
 
-
+更多问题建议可以交流一下 QQ:496080199
