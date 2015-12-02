@@ -2,7 +2,7 @@
 {% block configedit_act %}class="active"{% endblock%}
 {% block content %}
 <legend>{{serconf_name}}的定时任务日志<button class="btn btn-mini" type="button" onclick="location='{% url 'server_configure_manage' server_id %}' ">返回</button></legend>
-<label style="text-align:right"><button class="btn btn-primary" type="button" onclick="location='{% url 'server_configure_time_log_delall' id %}' ">一键全清除</button></label>
+<label style="text-align:right"><button class="btn btn-primary" type="button" onclick="javascript:if (confirm('是否要删除?')) location.href='{% url 'server_configure_time_log_delall' id %}';">一键全清除</button></label>
 			<table class="table">
 				<thead>
 					<tr>
@@ -21,7 +21,7 @@
 							{{log}}
 						</td>
 						<td>
-							<button type="button" class="btn btn-primary btn-mini" onclick="location='{%url 'server_configure_time_log_open' id log %}'">查看</button><button type="button" class="btn btn-primary btn-mini" onclick="location='{%url 'server_configure_time_log_del' id log %}'">删除</button>
+							<button type="button" class="btn btn-primary btn-mini" onclick="location='{%url 'server_configure_time_log_open' id log %}'">查看</button><button class="btn btn-primary btn-mini" type="button" onclick="javascript:if (confirm('是否要删除?')) location.href='{% url 'server_configure_time_log_del' id %}';">删除</button>
 						</td>
 					</tr>
 				{% endfor %}

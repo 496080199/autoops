@@ -20,7 +20,7 @@
 							{{file.f_path}}
 						</td>
 						<td>
-							 <button class="btn btn-primary btn-mini" type="button" onclick="location='/file_edit/{{file.id}}'">编辑</button> <button class="btn btn-primary btn-mini" type="button" onclick="location='/file_del/{{file.id}}'">删除</button>
+							 <button class="btn btn-primary btn-mini" type="button" onclick="location='/file_edit/{{file.id}}'">编辑</button> <button class="btn btn-primary btn-mini" type="button" onclick="javascript:if (confirm('是否要删除?')) location.href='{% url 'file_del' file.id %}';">删除</button>
 						</td>
 					</tr>
 				{% endfor %}

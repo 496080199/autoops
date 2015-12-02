@@ -51,7 +51,7 @@
 						</td>
 						<td>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/server_configure_edit/{{server_configure.id}}'">编辑</button>
-							<button class="btn btn-primary btn-mini" type="button" onclick="location='/server_configure_del/{{server_configure.id}}'">删除</button>
+							<button class="btn btn-primary btn-mini" type="button" onclick="javascript:if (confirm('是否要删除?')) location.href='{% url 'server_configure_del' server_configure.id %}';">删除</button>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/server_configure_action/{{server_configure.id}}'">执行</button>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/server_configure_time/{{server_configure.id}}'">定时任务</button>
 							<button class="btn btn-primary btn-mini" type="button" onclick="location='/server_configure_time_log/{{server_configure.id}}'">任务日志</button>
