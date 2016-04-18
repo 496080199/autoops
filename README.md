@@ -57,3 +57,8 @@ nohup python manage.py runserver 0.0.0.0:8000 &
 
 
 更多问题建议可以交流一下 QQ:496080199
+
+
+
+
+
