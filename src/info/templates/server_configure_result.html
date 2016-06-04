@@ -1,9 +1,0 @@
-{% extends 'config.html' %}
-{% block configedit_act %}class="active"{% endblock%}
-{% block content %}
-<br /><br />
-<legend>执行结果：</legend> 
-<textarea rows="20" style="width:100%" readonly="true">{{action_result}}</textarea>
-<br />
-<button class="btn" type="button" onclick="location='{% url 'server_configure_manage' server_id %}' ">返回</button>
-{% endblock %}		
