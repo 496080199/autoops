@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="container-fluid">
+	<div class="row-fluid">
+		<div class="span12">
+			<form action="/login" method="post">
+			{% module xsrf_form_html() %} 
+				<fieldset>
+					<legend>自动运维系统</legend> 
+					<label>用户名</label><input name="username" type="text" />
+					<label>密码</label><input name="password" type="password" />
+					<br /><button class="btn" type="submit">登录</button>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</div>
+{% end %}
