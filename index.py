@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-  
 import tornado.ioloop
 from tornado.web import Application
 import tornado.options
@@ -17,9 +18,11 @@ class Application(Application):
                   url(r"/",HomeHandler,name='home'),
                   url(r"/login",LoginHandler,name='login'),
                   url(r"/logout",LogoutHandler,name='logout'),
-                  url(r"/dashboard",DashboardHandler,name='dashboard')
+                  url(r"/dashboard",DashboardHandler,name='dashboard'),
+                  url(r"/autopub",AutopubHandler,name='autopub')
         ]
         settings = {
+        "ui_modules":{'Env': EnvModule},
         "template_path":os.path.join(os.path.dirname(__file__), "templates"),
         "static_path":os.path.join(os.path.dirname(__file__), "static"),
         "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
@@ -27,7 +30,7 @@ class Application(Application):
         "xsrf_cookies": True,
         }
         tornado.web.Application.__init__(self,handlers,debug=True,**settings)
-        self.db = scoped_session(sessionmaker(bind=engine))
+        
 if __name__=="__main__":
     tornado.options.parse_command_line()
     http_server=tornado.httpserver.HTTPServer(Application())

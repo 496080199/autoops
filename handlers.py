@@ -1,15 +1,18 @@
+# -*- coding:utf-8 -*-  
 from tornado.web import RequestHandler
 from tornado.web import authenticated
 
 from models import *
+from modules import *
 
 
 class BaseHandler(RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie("user")
-    @property
-    def db(self):
-        return self.application.db
+    def initialize(self):
+        self.session = DB_Session()
+    def on_finish(self):
+        self.session.close()
 class HomeHandler(BaseHandler): 
     def get(self):
         if not self.current_user:
@@ -21,7 +24,7 @@ class LoginHandler(BaseHandler):
     def post(self):
         username=self.get_argument('username')
         password=self.get_argument('password')
-        user=self.db.query(User).filter(User.username==username).one()
+        user=self.session.query(User).filter(User.username==username).one()
         if password == user.password:
             self.set_secure_cookie("user", username)
             self.redirect('dashboard')
@@ -36,5 +39,11 @@ class LogoutHandler(BaseHandler):
 class DashboardHandler(BaseHandler):
     @authenticated
     def get(self):
-        #self.write("OK")
         self.render('dashboard.html')
+class AutopubHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        envs=self.session.query(Env).all()
+        self.render('autopub.html',envs=envs)
+        
+    

@@ -1,6 +1,12 @@
 {% extends "pagebase.html" %}
 {% block autopub %}class="active"{% end %}
 {% block left %}
+<ul class="nav nav-list well" contenteditable="true">
+<li class="nav-header"><h4>环境<button class="btn btn-small">+</button></h4></li>
+{% for env in envs %}
+	{% module Env(env) %}
+{% end %}
+</ul>
 
 {% end %}
 {% block content %}
@@ -8,6 +14,6 @@
 				欢迎！
 			</h2>
 			<p>
-				本运维系统为方便系统程序管理
+				本模块为自动发布模块
 			</p>
 {% end %}
