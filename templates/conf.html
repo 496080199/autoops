@@ -1,0 +1,30 @@
+{% extends "pagebase.html" %}
+{% block autopub %}class="active"{% end %}
+{% block left %}
+<ul class="nav nav-list well">
+<li>
+<h5>当前位置：{{env.name}}环境-{{prod.name}}的配置</h5>
+<p><a href="/env/{{env.id}}">返回</a></p>
+</li>
+</ul>
+
+{% end %}
+{% block content %}
+
+<form>
+<fieldset>
+<label>规则(ansible-playbook)</label>
+<textarea name="rules" placeholder="请输入规则">{{conf.rules}}</textarea> 
+<label>主机（组）</label>
+<textarea name="hosts" placeholder="请输入主机（组）">{{conf.hosts}}</textarea> 
+<label>启用定时任务</label> 
+<input name="time" type="checkbox" {% if conf.time == 1 %}checked{% end %}> <br>
+分：<input type="text" value="{{conf.min}}" /><br>
+时：<input type="text" value="{{conf.hour}}"/><br>
+日：<input type="text" value="{{conf.day}}" /><br>
+月：<input type="text" value="{{conf.mon}}" /><br>
+周：<input type="text" value="{{conf.week}}" /><br>
+<button class="btn btn-primary"  type="submit">保存</button>
+<button class="btn"  type="submit">取消</button></fieldset>
+</form>
+{% end %}

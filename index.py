@@ -19,10 +19,16 @@ class Application(Application):
                   url(r"/login",LoginHandler,name='login'),
                   url(r"/logout",LogoutHandler,name='logout'),
                   url(r"/dashboard",DashboardHandler,name='dashboard'),
-                  url(r"/autopub",AutopubHandler,name='autopub')
+                  url(r"/autopub",AutopubHandler,name='autopub'),
+                  url(r"/env/([0-9]+)",EnvHandler,name='env'),
+                  url(r"/newenv",NewenvHandler,name='newenv'),
+                  url(r"/editenv/([0-9]+)",EditenvHandler,name='editenv'),
+                  url(r"/delenv/([0-9]+)",DelenvHandler,name='delenv'),
+                  url(r"/newprod/([0-9]+)",NewprodHandler,name='newprod'),
+                  url(r"/editprod/([0-9]+)/([0-9]+)",EditprodHandler,name='editprod'),
         ]
         settings = {
-        "ui_modules":{'Env': EnvModule},
+        "ui_modules":{'Env': EnvModule,'Prod':ProdModule},
         "template_path":os.path.join(os.path.dirname(__file__), "templates"),
         "static_path":os.path.join(os.path.dirname(__file__), "static"),
         "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
