@@ -90,6 +90,9 @@ class NewprodHandler(BaseHandler):
         prod=Prod(name=name,env_id=env_id)
         self.session.add(prod)
         self.session.commit()
+        conf=Conf(prod_id=prod.id)
+        self.session.add(conf)
+        self.session.commit()
         self.redirect("/env/"+env_id)
 class EditprodHandler(BaseHandler):
     @authenticated
@@ -103,25 +106,36 @@ class EditprodHandler(BaseHandler):
         prod.name=name
         self.session.commit()
         self.redirect("/env/"+env_id)
+class DelprodHandler(BaseHandler):
+    @authenticated  
+    def get(self,env_id,prod_id):
+        prod=self.session.query(Prod).get(prod_id)
+        conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
+        self.session.delete(conf)
+        self.session.delete(prod)
+        self.session.commit()
+        self.redirect("/env/"+env_id)
 class ConfHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):
         env=self.session.query(Env).get(env_id)
         prod=self.session.query(Prod).get(prod_id)
-        conf=self.session.query(Conf).filter(Conf.prod_id==prod_id)
+        conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
         self.render('conf.html',env=env,prod=prod,conf=conf)
     @authenticated
     def post(self,env_id,prod_id): 
-        rules=self.get_argument('rules')
-        hosts=self.get_argument('hosts')
-        time=self.get_argument('time')
-        min=self.get_argument('min')
-        hour=self.get_argument('hour')
-        day=self.get_argument('day')
-        mon=self.get_argument('mon')
-        week=self.get_argument('week')
-        conf=self.session.query(Conf).filter(Conf.prod_id==prod_id)
-        conf.rules=rules
+        conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
+        conf.rules=self.get_argument('rules')
+        conf.hosts=self.get_argument('hosts')
+        conf.time=self.get_argument('time')
+        conf.min=self.get_argument('min')
+        conf.hour=self.get_argument('hour')
+        conf.day=self.get_argument('day')
+        conf.mon=self.get_argument('mon')
+        conf.week=self.get_argument('week')
+        self.session.commit()
+        self.redirect("/env/"+env_id)
+
         
     
         

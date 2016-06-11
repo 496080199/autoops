@@ -3,7 +3,9 @@
 {% block left %}
 <ul class="nav nav-list well">
 <li>
-<h5>当前位置：{{env.name}}环境-{{prod.name}}的配置</h5>
+<h5>当前位置：</h5><br>
+&nbsp;&nbsp;{{env.name}}环境<br>
+&nbsp;&nbsp;>{{prod.name}}_配置<br>
 <p><a href="/env/{{env.id}}">返回</a></p>
 </li>
 </ul>
@@ -11,20 +13,26 @@
 {% end %}
 {% block content %}
 
-<form>
+<form action="/conf/{{env.id}}/{{prod.id}}" method="post">
+{% module xsrf_form_html() %} 
 <fieldset>
 <label>规则(ansible-playbook)</label>
-<textarea name="rules" placeholder="请输入规则">{{conf.rules}}</textarea> 
+<textarea name="rules" placeholder="请输入规则" rows="8" cols="100">{{conf.rules}}</textarea> 
 <label>主机（组）</label>
-<textarea name="hosts" placeholder="请输入主机（组）">{{conf.hosts}}</textarea> 
-<label>启用定时任务</label> 
-<input name="time" type="checkbox" {% if conf.time == 1 %}checked{% end %}> <br>
-分：<input type="text" value="{{conf.min}}" /><br>
-时：<input type="text" value="{{conf.hour}}"/><br>
-日：<input type="text" value="{{conf.day}}" /><br>
-月：<input type="text" value="{{conf.mon}}" /><br>
-周：<input type="text" value="{{conf.week}}" /><br>
+<textarea name="hosts" placeholder="请输入主机（组）" rows="6" cols="50">{{conf.hosts}}</textarea> 
+<label>定时任务</label> 
+<select name="time" >
+<option value=1 {% if conf.time ==1 %}selected{% end %}>开启
+<option value=0 {% if conf.time ==0 %}selected{% end %}>不开启
+</select>
+<br>
+<br>
+分：<input type="text" name="min" value="{{conf.min}}" /><br>
+时：<input type="text" name="hour" value="{{conf.hour}}"/><br>
+日：<input type="text" name="day" value="{{conf.day}}" /><br>
+月：<input type="text" name="mon" value="{{conf.mon}}" /><br>
+周：<input type="text" name="week" value="{{conf.week}}" /><br>
 <button class="btn btn-primary"  type="submit">保存</button>
-<button class="btn"  type="submit">取消</button></fieldset>
+<button class="btn" >取消</button></fieldset>
 </form>
 {% end %}

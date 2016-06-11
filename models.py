@@ -26,22 +26,27 @@ class Prod(Base):
     name=Column(VARCHAR(20),nullable=False)
     env_id=Column(Integer,ForeignKey('Env.id'))
     conf=relationship("Conf",uselist=False, back_populates="prod")
+    conffile=relationship("Conffile")
     ver=relationship("Ver")
 class Conf(Base):
     __tablename__='Conf'
     id=Column(INTEGER, primary_key = True)
-    name=Column(VARCHAR(20),nullable=False)
     prod_id=Column(Integer,ForeignKey('Prod.id'))
     prod=relationship("Prod", back_populates="conf")
-    rules=Column(VARCHAR(100),nullable=False)
-    hosts=Column(VARCHAR(100),nullable=False)
-    time=Column(BOOLEAN,nullable=False)
+    rules=Column(TEXT(500),nullable=False,default="---\n")
+    hosts=Column(TEXT(100),nullable=False,default="")
+    time=Column(BOOLEAN,nullable=False,default=False)
     min=Column(VARCHAR(10),nullable=False,default="0")
     hour=Column(VARCHAR(10),nullable=False,default="0")
     day=Column(VARCHAR(10),nullable=False,default="*")
     mon=Column(VARCHAR(10),nullable=False,default="*")
     week=Column(VARCHAR(10),nullable=False,default="*")
-    
+class Conffile(Base):
+    __tablename__='Conffile'
+    id=Column(INTEGER, primary_key = True)
+    name=Column(VARCHAR(20),nullable=False)
+    prod_id=Column(Integer,ForeignKey('Prod.id'))
+    file=Column(VARCHAR(50),nullable=False)
 class Ver(Base):
     __tablename__='Ver'
     id=Column(INTEGER, primary_key = True)
@@ -50,7 +55,7 @@ class Ver(Base):
     major=Column(Integer,nullable=False)
     minor=Column(Integer,nullable=False)
     revison=Column(Integer,nullable=False)
-    file=Column(VARCHAR(10),nullable=False)
+    file=Column(VARCHAR(50),nullable=False)
 class Config(Base):
     __tablename__='Config'
     id=Column(INTEGER, primary_key = True)

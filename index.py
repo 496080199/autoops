@@ -26,6 +26,8 @@ class Application(Application):
                   url(r"/delenv/([0-9]+)",DelenvHandler,name='delenv'),
                   url(r"/newprod/([0-9]+)",NewprodHandler,name='newprod'),
                   url(r"/editprod/([0-9]+)/([0-9]+)",EditprodHandler,name='editprod'),
+                  url(r"/delprod/([0-9]+)/([0-9]+)",DelprodHandler,name='delprod'),
+                  url(r"/conf/([0-9]+)/([0-9]+)",ConfHandler,name='conf'),
         ]
         settings = {
         "ui_modules":{'Env': EnvModule,'Prod':ProdModule},
