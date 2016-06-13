@@ -2,7 +2,7 @@
 {% block autopub %}class="active"{% end %}
 {% block left %}
 <ul class="nav nav-list well">
-<li class="nav-header"><h4>环境<a href="/newenv" ><input type="button" class="btn btn-small" value="增" /></a></h4></li>
+<li class="nav-header"><h4>环境<a href="/newenv" ><input type="button" class="btn btn-small btn-primary" value="新增" /></a></h4></li>
 {% for env in envs %}
 	{% module Env(env) %}
 {% end %}

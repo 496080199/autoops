@@ -1,0 +1,35 @@
+{% extends "pagebase.html" %}
+{% block autopub %}class="active"{% end %}
+{% block left %}
+<ul class="nav nav-list well">
+<li>
+<h5>当前位置：</h5><br>
+&nbsp;&nbsp;{{env.name}}环境<br>
+&nbsp;&nbsp;>{{prod.name}}_配置文件
+
+</li>
+<br>
+<li>
+<a href="/newconffile/{{env.id}}/{{prod.id}}/0" ><input type="button" class="btn btn-small btn-primary" value="新增配置文件" /></a>
+</li>
+<br>
+<p><a href="/env/{{env.id}}">返回</a></p>
+</ul>
+
+{% end %}
+{% block content %}
+
+<table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>名称</th>
+                      <th>文件</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for conffile in conffiles %}
+					{% module Conffile(prod,env,conffile) %}
+				  {% end %}
+                  </tbody>
+</table>
+{% end %}

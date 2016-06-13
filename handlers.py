@@ -4,6 +4,7 @@ from tornado.web import authenticated
 
 from models import *
 from modules import *
+import os
 
 
 class BaseHandler(RequestHandler):
@@ -124,9 +125,20 @@ class ConfHandler(BaseHandler):
         self.render('conf.html',env=env,prod=prod,conf=conf)
     @authenticated
     def post(self,env_id,prod_id): 
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path)
+        rulespath=os.path.join(upload_path,prod_id+'.yml')
+        hostspath=os.path.join(upload_path,prod_id+'.host')
         conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
         conf.rules=self.get_argument('rules')
+        rules=open(rulespath,'w')
+        rules.write(conf.rules)
+        rules.close()
         conf.hosts=self.get_argument('hosts')
+        hosts=open(hostspath,'w')
+        hosts.write(conf.hosts)
+        hosts.close()
         conf.time=self.get_argument('time')
         conf.min=self.get_argument('min')
         conf.hour=self.get_argument('hour')
@@ -135,8 +147,81 @@ class ConfHandler(BaseHandler):
         conf.week=self.get_argument('week')
         self.session.commit()
         self.redirect("/env/"+env_id)
+class ConffileHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id):
+        env=self.session.query(Env).get(env_id)
+        prod=self.session.query(Prod).get(prod_id)
+        conffiles=self.session.query(Conffile).filter(Conffile.prod_id==prod_id)
+        self.render('conffile.html',env=env,prod=prod,conffiles=conffiles)
+class NewconffileHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,message):
+        self.render('newconffile.html',env_id=env_id,prod_id=prod_id,message=message)
+    @authenticated
+    def post(self,env_id,prod_id,message):
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path)
+        file_metas=self.request.files['file']
+        for meta in file_metas:
+            filename=meta['filename']
+            filepath=os.path.join(upload_path,filename)
+            if not os.path.exists(filepath):
+                with open(filepath,'wb') as up:
+                    up.write(meta['body'])
+                conffile=Conffile(name=filename,prod_id=prod_id,file=filename)
+                self.session.add(conffile)
+                self.session.commit()
+                self.redirect("/conffile/"+env_id+'/'+prod_id)
+            else:
+                self.redirect("/newconffile/"+env_id+'/'+prod_id+'/1')
+class EditconffileHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,conffile_id):
+        conffile=self.session.query(Conffile).get(conffile_id)
+        self.render('editconffile.html',env_id=env_id,prod_id=prod_id,conffile=conffile)
+    @authenticated   
+    def post(self,env_id,prod_id,conffile_id):
+        conffile=self.session.query(Conffile).get(conffile_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        file_metas=self.request.files['file']
+        for meta in file_metas:
+            filename=conffile.file
+            filepath=os.path.join(upload_path,filename)         
+            with open(filepath,'wb') as up:
+                up.write(meta['body'])
+            self.redirect("/conffile/"+env_id+'/'+prod_id)
+class DelconffileHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,conffile_id):
+        conffile=self.session.query(Conffile).get(conffile_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        filepath=os.path.join(upload_path,conffile.file)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        self.session.delete(conffile)
+        self.session.commit()
+        self.redirect("/conffile/"+env_id+'/'+prod_id)
+class ViewconffileHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,conffile_id):
+        conffile=self.session.query(Conffile).get(conffile_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        filepath=os.path.join(upload_path,conffile.file)
+        file = open(filepath, 'r')
+        content=file.read()
+        self.render('viewconffile.html',env_id=env_id,prod_id=prod_id,conffile=conffile,content=content)
+    @authenticated
+    def post(self,env_id,prod_id,conffile_id):
+        content=self.get_argument("content")
+        conffile=self.session.query(Conffile).get(conffile_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        filepath=os.path.join(upload_path,conffile.file)
+        file=open(filepath, 'w')
+        file.write(content)
+        file.close()
+        self.redirect("/conffile/"+env_id+'/'+prod_id)
 
-        
-    
         
     
