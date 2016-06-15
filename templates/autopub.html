@@ -2,18 +2,22 @@
 {% block autopub %}class="active"{% end %}
 {% block left %}
 <ul class="nav nav-list well">
-<li class="nav-header"><h4>环境<a href="/newenv" ><input type="button" class="btn btn-small btn-primary" value="新增" /></a></h4></li>
-{% for env in envs %}
-	{% module Env(env) %}
-{% end %}
+<li class="nav-header"><h4>环境</h4></li>
+<a href="/newenv" ><input type="button" class="btn btn-small btn-primary" value="新增" /></a>
 </ul>
 
 {% end %}
 {% block content %}
-<h2>
-				欢迎！
-			</h2>
-			<p>
-				本模块为自动发布模块
-			</p>
+<table class="table table-bordered">
+                  <thead>
+                  <tr>
+                      <th>环境名称</th>
+                   </tr>
+                  </thead>
+                  <tbody>
+					{% for env in envs %}
+						{% module Env(env) %}
+					{% end %}
+                  </tbody>
+</table>
 {% end %}

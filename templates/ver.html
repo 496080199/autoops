@@ -5,12 +5,12 @@
 <li>
 <h5>当前位置：</h5><br>
 &nbsp;&nbsp;{{env.name}}环境<br>
-&nbsp;&nbsp;>{{prod.name}}_配置文件
+&nbsp;&nbsp;>{{prod.name}}_版本管理
 
 </li>
 <br>
 <li>
-<a href="/newconffile/{{env.id}}/{{prod.id}}/0" ><input type="button" class="btn btn-small btn-primary" value="新增配置文件" /></a>
+<a href="/newver/{{env.id}}/{{prod.id}}/0" ><input type="button" class="btn btn-small btn-primary" value="新增版本" /></a>
 </li>
 <br>
 <p><a href="/env/{{env.id}}">返回</a></p>
@@ -22,14 +22,16 @@
 <table class="table table-bordered">
                   <thead>
                     <tr>
-                      <th>名称</th>
-                      <th>时间</th>
+                      <th>版本名称</th>
+                      <th>建立时间</th>
+                      <th>修改时间</th>
                       <th>文件</th>
+                      <th>操作</th>
                     </tr>
                   </thead>
                   <tbody>
-                  {% for conffile in conffiles %}
-					{% module Conffile(prod,env,conffile) %}
+                  {% for ver in vers %}
+					{% module Ver(prod,env,ver) %}
 				  {% end %}
                   </tbody>
 </table>

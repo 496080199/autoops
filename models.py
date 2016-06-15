@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship,backref,sessionmaker
 from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
 
 engine = create_engine('mysql://root@localhost/test?charset=utf8', echo=False)
 DB_Session = sessionmaker(bind=engine)
@@ -45,6 +46,7 @@ class Conffile(Base):
     __tablename__='Conffile'
     id=Column(INTEGER, primary_key = True)
     name=Column(VARCHAR(20),nullable=False)
+    time=Column(DATETIME,nullable=False,default=datetime.now())
     prod_id=Column(Integer,ForeignKey('Prod.id'))
     file=Column(VARCHAR(50),nullable=False)
 class Ver(Base):
@@ -55,6 +57,8 @@ class Ver(Base):
     major=Column(Integer,nullable=False)
     minor=Column(Integer,nullable=False)
     revison=Column(Integer,nullable=False)
+    pub_time=Column(DATETIME,nullable=False,default=datetime.now())
+    ch_time=Column(DATETIME,nullable=False,default=datetime.now())
     file=Column(VARCHAR(50),nullable=False)
 class Config(Base):
     __tablename__='Config'

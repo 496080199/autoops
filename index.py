@@ -35,7 +35,7 @@ class Application(Application):
                   url(r"/viewconffile/([0-9]+)/([0-9]+)/([0-9]+)",ViewconffileHandler,name='viewconffile'),
         ]
         settings = {
-        "ui_modules":{'Env': EnvModule,'Prod':ProdModule,'Conffile':ConffileModule},
+        "ui_modules":{'Env': EnvModule,'Prod':ProdModule,'Conffile':ConffileModule,'Ver':VerModule},
         "template_path":os.path.join(os.path.dirname(__file__), "templates"),
         "static_path":os.path.join(os.path.dirname(__file__), "static"),
         "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",

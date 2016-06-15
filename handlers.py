@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-  
 from tornado.web import RequestHandler
 from tornado.web import authenticated
-
+from datetime import datetime
 from models import *
 from modules import *
 import os
@@ -132,11 +132,11 @@ class ConfHandler(BaseHandler):
         hostspath=os.path.join(upload_path,prod_id+'.host')
         conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
         conf.rules=self.get_argument('rules')
-        rules=open(rulespath,'w')
+        rules=open(rulespath,'wb')
         rules.write(conf.rules)
         rules.close()
         conf.hosts=self.get_argument('hosts')
-        hosts=open(hostspath,'w')
+        hosts=open(hostspath,'wb')
         hosts.write(conf.hosts)
         hosts.close()
         conf.time=self.get_argument('time')
@@ -185,13 +185,18 @@ class EditconffileHandler(BaseHandler):
     def post(self,env_id,prod_id,conffile_id):
         conffile=self.session.query(Conffile).get(conffile_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
-        file_metas=self.request.files['file']
-        for meta in file_metas:
-            filename=conffile.file
-            filepath=os.path.join(upload_path,filename)         
-            with open(filepath,'wb') as up:
-                up.write(meta['body'])
+        if self.request.files.has_key('file'):            
+            file_metas=self.request.files['file']
+            for meta in file_metas:
+                filename=conffile.file
+                filepath=os.path.join(upload_path,filename)         
+                with open(filepath,'wb') as up:
+                    up.write(meta['body'])
+            conffile.time=datetime.now()
+            self.session.commit()
             self.redirect("/conffile/"+env_id+'/'+prod_id)
+        else:
+            self.redirect("/message/")
 class DelconffileHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id,conffile_id):
@@ -209,7 +214,7 @@ class ViewconffileHandler(BaseHandler):
         conffile=self.session.query(Conffile).get(conffile_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         filepath=os.path.join(upload_path,conffile.file)
-        file = open(filepath, 'r')
+        file = open(filepath, 'rb')
         content=file.read()
         self.render('viewconffile.html',env_id=env_id,prod_id=prod_id,conffile=conffile,content=content)
     @authenticated
@@ -218,10 +223,65 @@ class ViewconffileHandler(BaseHandler):
         conffile=self.session.query(Conffile).get(conffile_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         filepath=os.path.join(upload_path,conffile.file)
-        file=open(filepath, 'w')
+        file=open(filepath, 'wb')
         file.write(content)
         file.close()
+        conffile.time=datetime.now()
+        self.session.commit()
         self.redirect("/conffile/"+env_id+'/'+prod_id)
-
-        
+class VerHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id):
+        env=self.session.query(Env).get(env_id)
+        prod=self.session.query(Prod).get(prod_id)
+        ver=self.session.query(Ver).filter(Ver.prod_id==prod_id)
+        self.render('ver.html',env=env,prod=prod,ver=ver)
+class NewverHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,message):
+        self.render('newver.html',env_id=env_id,prod_id=prod_id,message=message)
+    @authenticated
+    def post(self,env_id,prod_id,message):
+        major=self.get_argument("major")
+        minor=self.get_argument("minor")
+        revison=self.get_argument("revison")
+        name="V"+major+"."+minor+"."+revison
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path)
+        file_metas=self.request.files['file']
+        for meta in file_metas:
+            filename=meta['filename']
+            filepath=os.path.join(upload_path,filename)
+            if not os.path.exists(filepath):
+                with open(filepath,'wb') as up:
+                    up.write(meta['body'])
+                ver=Ver(name=name,major=major,minor=minor,revison=revison,file=filename,prod_id=prod_id)
+                self.session.add(ver)
+                self.session.commit()
+                self.redirect("/ver/"+env_id+'/'+prod_id)
+            else:
+                self.redirect("/newver/"+env_id+'/'+prod_id+'/1')
+class EditverHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,ver_id):
+        ver=self.session.query(Ver).get(ver_id)
+        self.render('editver.html',env_id=env_id,prod_id=prod_id,ver=ver)
+    @authenticated   
+    def post(self,env_id,prod_id,ver_id):
+        major=self.get_argument("major")
+        minor=self.get_argument("minor")
+        revison=self.get_argument("revison")
+        name="V"+major+"."+minor+"."+revison
+        ver=self.session.query(Ver).get(ver_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        file_metas=self.request.files['file']
+        for meta in file_metas:
+            filename=conffile.file
+            filepath=os.path.join(upload_path,filename)         
+            with open(filepath,'wb') as up:
+                up.write(meta['body'])
+        conffile.time=datetime.now()
+        self.session.commit()
+        self.redirect("/conffile/"+env_id+'/'+prod_id)       
     

@@ -10,4 +10,8 @@ class ProdModule(UIModule):
 class ConffileModule(UIModule):
     def render(self,prod,env,conffile):
         return self.render_string('modules/conffile.html',prod=prod,env=env,conffile=conffile)
+class VerModule(UIModule):
+    def render(self,prod,env,ver):
+        return self.render_string('modules/ver.html',prod=prod,env=env,ver=ver)
+    
 
