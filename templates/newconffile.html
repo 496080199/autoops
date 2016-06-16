@@ -2,15 +2,12 @@
 {% block autopub %}class="active"{% end %}
 
 {% block content %}
-<form action="/newconffile/{{env_id}}/{{prod_id}}/0" enctype="multipart/form-data" method="post">
+<form action="/newconffile/{{env_id}}/{{prod_id}}" enctype="multipart/form-data" method="post">
 {% module xsrf_form_html() %} 
 <fieldset>
 <label>文件上传</label> 
 <input type="file" name="file" />
-{% if message == "1" %}
-<br>
-文件已存在
-{% end %}
+
 <br>
 <button class="btn btn-primary"  type="submit">保存</button>
 <a href="/conffile/{{env_id}}/{{prod_id}}" ><input type="button" class="btn" value="取消" /></a></fieldset>

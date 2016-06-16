@@ -1,0 +1,14 @@
+{% extends "pagebase.html" %}
+{% block autopub %}class="active"{% end %}
+
+{% block content %}
+{% if id=='1' %}
+提示：文件已存在
+{% end %}
+{% if id=='2' %}
+提示：您未选择文件
+{% end %}
+<br>
+<br>
+<input type="button" name="submit" onclick="javascript:history.back(-1);" value="返回上一页">
+{% end %}

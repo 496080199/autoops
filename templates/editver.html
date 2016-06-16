@@ -5,12 +5,6 @@
 <form action="/editver/{{env_id}}/{{prod_id}}/{{ver.id}}" enctype="multipart/form-data" method="post">
 {% module xsrf_form_html() %} 
 <fieldset>
-<label>主版本号</label> 
-<input type="number" name="major" value="{{ver.major}}" />
-<label>次版本号</label> 
-<input type="number" name="minor" value="{{ver.minor}}" />
-<label>修订版本号</label> 
-<input type="number" name="revison" value="{{ver.revison}}" />
 <label>文件上传</label> 
 <input type="file" name="file" />
 <br>

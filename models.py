@@ -29,6 +29,7 @@ class Prod(Base):
     conf=relationship("Conf",uselist=False, back_populates="prod")
     conffile=relationship("Conffile")
     ver=relationship("Ver")
+    publog=relationship("Publog")
 class Conf(Base):
     __tablename__='Conf'
     id=Column(INTEGER, primary_key = True)
@@ -48,7 +49,7 @@ class Conffile(Base):
     name=Column(VARCHAR(20),nullable=False)
     time=Column(DATETIME,nullable=False,default=datetime.now())
     prod_id=Column(Integer,ForeignKey('Prod.id'))
-    file=Column(VARCHAR(50),nullable=False)
+    file=Column(VARCHAR(100),nullable=False)
 class Ver(Base):
     __tablename__='Ver'
     id=Column(INTEGER, primary_key = True)
@@ -59,7 +60,16 @@ class Ver(Base):
     revison=Column(Integer,nullable=False)
     pub_time=Column(DATETIME,nullable=False,default=datetime.now())
     ch_time=Column(DATETIME,nullable=False,default=datetime.now())
-    file=Column(VARCHAR(50),nullable=False)
+    file=Column(VARCHAR(100),nullable=False)
+class Publog(Base):
+    __tablename__='Publog'
+    id=Column(INTEGER, primary_key = True)
+    prod_id=Column(Integer,ForeignKey('Prod.id'))
+    user=Column(VARCHAR(20),nullable=False)
+    time=Column(DATETIME,nullable=False,default=datetime.now())
+    status=Column(VARCHAR(20),nullable=False)
+    content=Column(TEXT,nullable=False)
+    
 class Config(Base):
     __tablename__='Config'
     id=Column(INTEGER, primary_key = True)
