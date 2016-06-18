@@ -332,7 +332,7 @@ class PubverHandler(BaseHandler):
         publog=Publog(prod_id=prod_id,ver_id=ver_id,user=self.get_current_user(),status=status,content=output)
         self.session.add(publog)
         self.session.commit()
-        self.redirect("/viewpublog/"+ver_id+'/'+publog.id)
+        self.redirect("/viewpublog/"+ver_id+'/'+str(publog.id))
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
