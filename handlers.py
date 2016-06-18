@@ -4,7 +4,7 @@ from tornado.web import authenticated
 from datetime import datetime
 from models import *
 from modules import *
-import os,commands
+import os,commands,re
 
 
 
@@ -41,7 +41,13 @@ class LogoutHandler(BaseHandler):
 class DashboardHandler(BaseHandler):
     @authenticated
     def get(self):
-        self.render('dashboard.html')
+        status,output=commands.getstatusoutput('cat ~/.ssh/id_rsa.pub')
+        regex=ur"ssh-rsa"
+        if re.search(regex,output):
+            content=output
+        else:
+            content='未找到公钥，请在服务器上使用ssh-keygen -t rsa命令生成.'
+        self.render('dashboard.html',content=content)
 class AutopubHandler(BaseHandler):
     @authenticated
     def get(self):
