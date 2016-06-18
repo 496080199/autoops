@@ -4,7 +4,7 @@ from tornado.web import authenticated
 from datetime import datetime
 from models import *
 from modules import *
-import os,commands,re
+import os,commands,re,time
 
 
 
@@ -28,7 +28,7 @@ class LoginHandler(BaseHandler):
         password=self.get_argument('password')
         user=self.session.query(User).filter(User.username==username).one()
         if password == user.password:
-            self.set_secure_cookie("user", username)
+            self.set_secure_cookie("user", username,expires=time.time()+900)
             self.redirect('dashboard')
         else:
             self.redirect("login")
@@ -249,7 +249,7 @@ class VerHandler(BaseHandler):
     def get(self,env_id,prod_id):
         env=self.session.query(Env).get(env_id)
         prod=self.session.query(Prod).get(prod_id)
-        vers=self.session.query(Ver).filter(Ver.prod_id==prod_id)
+        vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).order_by(desc(Ver.pub_time))
         self.render('ver.html',env=env,prod=prod,vers=vers)
 class NewverHandler(BaseHandler):
     @authenticated
