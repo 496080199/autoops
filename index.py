@@ -39,6 +39,7 @@ class Application(Application):
                   url(r"/editver/([0-9]+)/([0-9]+)/([0-9]+)",EditverHandler,name='editver'),
                   url(r"/delver/([0-9]+)/([0-9]+)/([0-9]+)",DelverHandler,name='delver'),
                   url(r"/downver/([0-9]+)/([0-9]+)/([0-9]+)",DownverHandler,name='downver'),
+                  url(r"/pubver/([0-9]+)/([0-9]+)/([0-9]+)",PubverHandler,name='pubver'),
         ]
         settings = {
         "ui_modules":{'Env': EnvModule,'Prod':ProdModule,'Conffile':ConffileModule,'Ver':VerModule},
