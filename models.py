@@ -1,13 +1,12 @@
 # -*- coding:utf-8 -*-  
 from sqlalchemy import *
-from sqlalchemy.orm import relationship,backref,sessionmaker
+from sqlalchemy.orm import relationship,backref
 from datetime import datetime
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from db import *
 
-engine = create_engine('mysql://root@localhost/test?charset=utf8', echo=False)
-DB_Session = sessionmaker(bind=engine)
+
 Base = declarative_base()
 
 
