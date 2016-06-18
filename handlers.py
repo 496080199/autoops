@@ -4,7 +4,8 @@ from tornado.web import authenticated
 from datetime import datetime
 from models import *
 from modules import *
-import os
+import os,commands
+
 
 
 class BaseHandler(RequestHandler):
@@ -325,11 +326,10 @@ class DownverHandler(BaseHandler):
 class PubverHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id,ver_id):
-        import commands
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         ver=self.session.query(Ver).get(ver_id)
         status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
-        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status=status,content=output)
+        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status=status,content=output,time=datetime.now())
         self.session.add(publog)
         self.session.commit()
         self.redirect("/viewpublog/"+ver_id+'/'+str(publog.id))
