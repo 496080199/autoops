@@ -329,10 +329,18 @@ class PubverHandler(BaseHandler):
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         ver=self.session.query(Ver).get(ver_id)
         status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
-        publog=Publog(prod_id=prod_id,user=self.get_current_user(),status=status,content=output)
+        publog=Publog(prod_id=prod_id,ver_id=ver_id,user=self.get_current_user(),status=status,content=output)
         self.session.add(publog)
         self.session.commit()
-        self.render('publog.html',env_id=env_id,prod_id=prod_id,status=status,output=output,ver=ver)
+        self.redirect("/viewpublog/"+ver_id+'/'+publog.id)
+        
+class ViewpublogHandler(BaseHandler):
+    @authenticated
+    def get(self,ver_id,publog_id):
+        publog=self.session.query(Publog).get(publog_id)
+        ver=self.session.query(Ver).get(ver_id)
+        self.render('publog.html',publog=publog,ver=ver)
+        
         
         
     

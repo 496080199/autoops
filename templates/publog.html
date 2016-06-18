@@ -4,13 +4,13 @@
 {% block content %}
 <label>{{ver.file}}发布情况</label>
 <label>状态：
-{% if status == 0 %}
+{% if publog.content == 0 %}
 成功
 {% else %}
 故障
 {% end %}
 </label>
-<textarea rows="30" cols="100" style="margin: 0px 0px 10px; width: 800px; height: 160px;">{{output}}</textarea>
+<textarea rows="30" cols="100" style="margin: 0px 0px 10px; width: 800px; height: 160px;">{{publog.content}}</textarea>
 <br>
-<a href="/ver/{{env_id}}/{{prod_id}}" ><input type="button" class="btn" value="返回" /></a>
+<input type="button" name="submit" onclick="javascript:history.back(-1);" value="返回">
 {% end %}
