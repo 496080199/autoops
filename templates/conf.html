@@ -19,16 +19,18 @@
 <fieldset>
 <label>规则(ansible-playbook)</label>
 
-<textarea name="rules" placeholder="请输入规则" rows="8" cols="100">{{conf.rules}}</textarea> 
+<textarea class="form-control" name="rules" placeholder="请输入规则" rows="8" cols="100">{{conf.rules}}</textarea> 
+{% if conffiles %}
 <p>可引用的配置文件</p>
 <ul>
 {% for conffile in conffiles %}
 <li>{{conffile.file}}</li>
 {% end %}
 </ul>
+{% end %}
 <br>
 <label>主机（组）</label>
-<textarea name="hosts" placeholder="请输入主机（组）" rows="6" cols="50">{{conf.hosts}}</textarea> 
+<textarea class="form-control" name="hosts" placeholder="请输入主机（组）" rows="6" cols="50">{{conf.hosts}}</textarea> 
 <label>定时任务</label> 
 <select name="time" >
 <option value=1 {% if conf.time ==1 %}selected{% end %}>开启
