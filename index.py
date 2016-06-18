@@ -40,6 +40,7 @@ class Application(Application):
                   url(r"/delver/([0-9]+)/([0-9]+)/([0-9]+)",DelverHandler,name='delver'),
                   url(r"/downver/([0-9]+)/([0-9]+)/([0-9]+)",DownverHandler,name='downver'),
                   url(r"/pubver/([0-9]+)/([0-9]+)/([0-9]+)",PubverHandler,name='pubver'),
+                  url(r"/viewpublog/([0-9]+)/([0-9]+)",ViewpublogHandler,name='viewpublog'),
         ]
         settings = {
         "ui_modules":{'Env': EnvModule,'Prod':ProdModule,'Conffile':ConffileModule,'Ver':VerModule},
