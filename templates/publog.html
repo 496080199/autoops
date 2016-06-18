@@ -1,16 +1,25 @@
 {% extends "pagebase.html" %}
 {% block autopub %}class="active"{% end %}
+{% block left %}
+<ul class="nav nav-list well">
+<li>
+<h5>当前位置：</h5><br>
+&nbsp;&nbsp;{{env.name}}环境<br>
+&nbsp;&nbsp;>{{prod.name}}_日志
 
-{% block content %}
-<label>{{ver.file}}发布情况</label>
-<label>状态：
-{% if publog.content == 0 %}
-成功
-{% else %}
-故障
-{% end %}
-</label>
-<textarea rows="30" cols="100" style="margin: 0px 0px 10px; width: 800px; height: 160px;">{{publog.content}}</textarea>
+</li>
 <br>
-<input type="button" name="submit" onclick="javascript:history.back(-1);" value="返回">
+<br>
+<p><a href="/env/{{env.id}}">返回</a></p>
+</ul>
+
+{% end %}
+{% block content %}
+
+<ol>
+{% for publog in publogs %}
+<li>{{publog.user}}用户在{{publog.time}}发布了{{publog.ver_name}} <a href="/viewpublog/{{publog.ver_id}}/{{publog.id}}>查看日志</a></li><br>
+{% end %}
+</ol>
+
 {% end %}

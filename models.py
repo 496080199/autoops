@@ -65,6 +65,7 @@ class Publog(Base):
     id=Column(INTEGER, primary_key = True)
     prod_id=Column(Integer,ForeignKey('Prod.id'))
     ver_id=Column(Integer,nullable=False)
+    ver_name=Column(VARCHAR(20),nullable=False)
     user=Column(VARCHAR(20),nullable=False)
     time=Column(DATETIME,nullable=False,default=datetime.now())
     status=Column(VARCHAR(20),nullable=False)
