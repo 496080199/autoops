@@ -346,7 +346,7 @@ class PublogHandler(BaseHandler):
     def get(self,env_id,prod_id):
         env=self.session.query(Env).get(env_id)
         prod=self.session.query(Prod).get(prod_id)
-        publogs=self.session.query(Publog).filter(Publog.prod_id==prod_id)
+        publogs=self.session.query(Publog).filter(Publog.prod_id==prod_id).order_by(desc(Publog.time))
         self.render('publog.html',publogs=publogs,env=env,prod=prod)
         
     
