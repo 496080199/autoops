@@ -339,13 +339,13 @@ class PubverHandler(BaseHandler):
         log_path=os.path.join(upload_path,'logs/')
         if not os.path.exists(log_path):
             os.makedirs(log_path)
-        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",time=datetime.now())
+        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",content='',time=datetime.now())
         self.session.add(publog)
         self.session.commit()
         import subprocess
         
         
-        print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" \> "+log_path+str(publog.id)
+        print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log"
         popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" \> "+log_path+str(publog.id),shell=True)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
         self.redirect("/viewpublog/"+ver_id+'/'+str(publog.id))
@@ -359,9 +359,14 @@ class PubverHandler(BaseHandler):
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
-    def get(self,ver_id,publog_id):
+    def get(self,env_id,prod_id,ver_id,publog_id):
         publog=self.session.query(Publog).get(publog_id)
         ver=self.session.query(Ver).get(ver_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        log_path=os.path.join(upload_path,'logs/'+publog_id+'.log')
+        logfile=open(log_path,'rb')
+        publog.content=logfile.readlines()
+        self.session.commit()
         self.render('viewpublog.html',publog=publog,ver=ver)
         
 class PublogHandler(BaseHandler):

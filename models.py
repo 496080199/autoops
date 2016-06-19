@@ -69,7 +69,7 @@ class Publog(Base):
     user=Column(VARCHAR(20),nullable=False)
     time=Column(DATETIME,nullable=False,default=datetime.now())
     status=Column(VARCHAR(20),nullable=False)
-    #content=Column(VARCHAR,nullable=False)
+    content=Column(VARCHAR,nullable=False)
     
 class Config(Base):
     __tablename__='Config'
