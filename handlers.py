@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-  
 from tornado.web import RequestHandler
 from tornado.web import authenticated
+from tornado import asynchronous
 from datetime import datetime
 from models import *
 from modules import *
@@ -329,19 +330,24 @@ class DownverHandler(BaseHandler):
                 self.write(data)
                 
         self.finish()
-class PubverHandler(BaseHandler):
+class PubverHandler(BaseHandler): 
     @authenticated
+    @asynchronous
     def get(self,env_id,prod_id,ver_id):
-        import subprocess
-        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         ver=self.session.query(Ver).get(ver_id)
-        print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\""
-        popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\"",shell=True,stdout=subprocess.PIPE)
-        #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
-        print popen.stdout.readline()
-        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",content=popen.stdout.readline(),time=datetime.now())
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        log_path=os.path.join(upload_path,'/logs/')
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
+        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",time=datetime.now())
         self.session.add(publog)
         self.session.commit()
+        import subprocess
+        
+        
+        print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" \> "+log_path+str(publog.id)
+        popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" \> "+log_path+str(publog.id),shell=True)
+        #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
         self.redirect("/viewpublog/"+ver_id+'/'+str(publog.id))
         popen.wait()
         if popen.returncode == 0:
@@ -349,6 +355,7 @@ class PubverHandler(BaseHandler):
         else:
             publog.status="错误"
         self.session.commit()
+        self.finish()
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
