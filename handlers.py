@@ -331,8 +331,8 @@ class DownverHandler(BaseHandler):
                 
         self.finish()
 class PubverHandler(BaseHandler): 
-    @asynchronous
     @authenticated
+    @gen.coroutine
     def get(self,env_id,prod_id,ver_id):
         ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
