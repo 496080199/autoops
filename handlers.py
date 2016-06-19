@@ -348,7 +348,9 @@ class PubverHandler(BaseHandler):
         print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log"
         popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log",shell=True)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
-        self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
+        #self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
+        response = yield AsyncHTTPClient().fetch("/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
+        print(response)
         popen.wait()
         if popen.returncode == 0:
             publog.status="成功"
