@@ -355,7 +355,6 @@ class PubverHandler(BaseHandler):
         else:
             publog.status="错误"
         self.session.commit()
-        self.finish()
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
