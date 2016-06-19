@@ -336,7 +336,7 @@ class PubverHandler(BaseHandler):
     def get(self,env_id,prod_id,ver_id):
         ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
-        log_path=os.path.join(upload_path,'/logs/')
+        log_path=os.path.join(upload_path,'logs/')
         if not os.path.exists(log_path):
             os.makedirs(log_path)
         publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",time=datetime.now())
