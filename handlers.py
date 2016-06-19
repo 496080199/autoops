@@ -367,6 +367,7 @@ class ViewpublogHandler(BaseHandler):
         logfile=open(log_path,'rb')
         publog.content=logfile.readlines()
         self.session.commit()
+        logfile.close()
         self.render('viewpublog.html',publog=publog,ver=ver)
         
 class PublogHandler(BaseHandler):
