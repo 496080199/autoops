@@ -343,7 +343,7 @@ class PubverHandler(BaseHandler):
         self.session.add(publog)
         self.session.commit()
         import subprocess
-        
+        from tornado.httpclient import AsyncHTTPClient
         
         print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log"
         popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log",shell=True)
