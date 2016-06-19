@@ -338,6 +338,7 @@ class PubverHandler(BaseHandler):
         print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\""
         popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\"",shell=True,stdout=subprocess.PIPE)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
+        print popen.stdout.readline()
         publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",content=popen.stdout.readline(),time=datetime.now())
         self.session.add(publog)
         self.session.commit()
