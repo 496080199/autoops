@@ -331,8 +331,8 @@ class DownverHandler(BaseHandler):
                 
         self.finish()
 class PubverHandler(BaseHandler): 
-    @authenticated
     @asynchronous
+    @authenticated
     def get(self,env_id,prod_id,ver_id):
         ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
@@ -355,6 +355,7 @@ class PubverHandler(BaseHandler):
         else:
             publog.status="错误"
         self.session.commit()
+        self.finish()
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
