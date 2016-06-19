@@ -2,6 +2,7 @@
 from tornado.web import RequestHandler
 from tornado.web import authenticated
 from tornado.web import asynchronous
+from tornado.gen import coroutine
 from datetime import datetime
 from models import *
 from modules import *
@@ -332,7 +333,7 @@ class DownverHandler(BaseHandler):
         self.finish()
 class PubverHandler(BaseHandler): 
     @authenticated
-    @gen.coroutine
+    @coroutine
     def get(self,env_id,prod_id,ver_id):
         ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
