@@ -3,12 +3,8 @@
 
 {% block content %}
 <label>{{ver.file}}发布情况</label>
-<label>状态：
-{% if publog.status == '0' %}
-成功
-{% else %}
-故障
-{% end %}
+<label>执行状态：
+{{publog.status}}
 </label>
 <textarea rows="50" cols="100" style="margin: 0px 0px 10px; width: 800px; height: 160px;">{{publog.content}}</textarea>
 <br>

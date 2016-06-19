@@ -332,13 +332,21 @@ class DownverHandler(BaseHandler):
 class PubverHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id,ver_id):
+        import subprocess
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         ver=self.session.query(Ver).get(ver_id)
-        status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
-        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status=status,content=output,time=datetime.now())
+        popen=subprocess.Popen('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"',shell=True,stdout=subprocess.PIPE)
+        #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
+        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",content=popen.stdout.readline(),time=datetime.now())
         self.session.add(publog)
         self.session.commit()
         self.redirect("/viewpublog/"+ver_id+'/'+str(publog.id))
+        popen.wait()
+        if popen.returncode == 0:
+            publog.status="成功"
+        else:
+            publog.status="错误"
+        self.session.commit()
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
