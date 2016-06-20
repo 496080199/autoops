@@ -1,6 +1,6 @@
 <div class="ver{{ver.id}}">
 <tr>
-                      <td>{{ver.name}}&nbsp;&nbsp;<a href="/editver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="重传" /></a><a href="/delver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="删" /></a></td>
+                      <td>{{ver.name}}&nbsp;&nbsp;<a href="/editver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="重传" /></a><a href="/delver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="删" onclick="if(confirm('您确定要删除吗?')==false) return false;" /></a></td>
                       <td>{{ver.pub_time}}</td>
                       <td>{{ver.ch_time}}</td>
                       <td><a href="/downver/{{env.id}}/{{prod.id}}/{{ver.id}}" >{{ver.file}}</a></td>

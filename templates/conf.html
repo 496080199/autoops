@@ -18,10 +18,10 @@
 {% module xsrf_form_html() %} 
 <fieldset>
 <label>规则(ansible-playbook)</label>
-
 <textarea class="form-control" name="rules" placeholder="请输入规则" rows="8" cols="100" style="margin: 0px 0px 10px; width: 800px; height: 160px;">{{conf.rules}}</textarea> 
-{% if conffiles %}
-<p>可引用的配置文件</p>
+<p>版本文件使用{{bag}}引用.</p>
+{% if len(conffiles) != 0 %}
+<p>可引用的配置文件:</p>
 <ul>
 {% for conffile in conffiles %}
 <li>{{conffile.file}}</li>
