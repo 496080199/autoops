@@ -19,7 +19,7 @@
 <fieldset>
 <label>规则(ansible-playbook)</label>
 <textarea class="form-control" name="rules" placeholder="请输入规则" rows="8" cols="100" style="margin: 0px 0px 10px; width: 800px; height: 160px;">{{conf.rules}}</textarea> 
-<p>版本文件使用{{ raw bag }}引用.</p>
+<p>版本文件使用大括号 bag引用.</p>
 {% if conffiles.count() != 0 %}
 <p>可引用的配置文件:</p>
 <ul>
