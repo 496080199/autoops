@@ -7,6 +7,7 @@ from datetime import datetime
 from models import *
 from modules import *
 import os,commands,re,time
+import subprocess
 
 
 
@@ -340,25 +341,13 @@ class PubverHandler(BaseHandler):
         log_path=os.path.join(upload_path,'logs/')
         if not os.path.exists(log_path):
             os.makedirs(log_path)
-        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),status="正在执行",content='',time=datetime.now())
+        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),content='',time=datetime.now())
         self.session.add(publog)
-        self.session.commit()
-        import subprocess
-        from tornado.httpclient import AsyncHTTPClient
-        
+        self.session.commit()        
         print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log"
-        popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log",shell=True)
+        popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+str(publog.id)+".log",shell=True)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
-        #self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
-        response = yield AsyncHTTPClient().fetch("http://127.0.0.1:8000/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
-        print(response)
-        popen.wait()
-        if popen.returncode == 0:
-            publog.status="成功"
-        else:
-            publog.status="错误"
-        self.session.commit()
-        self.finish()
+        self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
@@ -367,10 +356,11 @@ class ViewpublogHandler(BaseHandler):
         ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         log_path=os.path.join(upload_path,'logs/'+publog_id+'.log')
-        logfile=open(log_path,'rb')
-        publog.content=logfile.read()
-        self.session.commit()
-        logfile.close()
+        if os.path.exists(log_path):
+            logfile=open(log_path,'rb')
+            publog.content=logfile.read()
+            self.session.commit()
+            logfile.close()
         self.render('viewpublog.html',publog=publog,ver=ver)
         
 class PublogHandler(BaseHandler):

@@ -68,7 +68,6 @@ class Publog(Base):
     ver_name=Column(VARCHAR(20),nullable=False)
     user=Column(VARCHAR(20),nullable=False)
     time=Column(DATETIME,nullable=False,default=datetime.now())
-    status=Column(VARCHAR(20),nullable=False)
     content=Column(TEXT,nullable=False)
     
 class Config(Base):
