@@ -296,10 +296,11 @@ class EditverHandler(BaseHandler):
         if self.request.files.has_key('file'):
             file_metas=self.request.files['file']
             for meta in file_metas:
-                filename=ver.file
+                filename=ver.name+'_'+meta['filename']
             filepath=os.path.join(upload_path,filename)         
             with open(filepath,'wb') as up:
                 up.write(meta['body'])
+            ver.file=filename
             ver.ch_time=datetime.now()
             self.session.commit()
             self.redirect("/ver/"+env_id+'/'+prod_id) 
