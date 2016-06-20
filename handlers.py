@@ -7,7 +7,7 @@ from datetime import datetime
 from models import *
 from modules import *
 import os,commands,re,time
-import subprocess
+from subprocess import Popen,PIPE
 
 
 
@@ -332,9 +332,17 @@ class DownverHandler(BaseHandler):
                 self.write(data)
                 
         self.finish()
+class CheckHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,ver_id):
+        ver=self.session.query(Ver).get(ver_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)     
+        popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" --syntax-check",shell=True,stdout=PIPE)
+        popen.wait()
+        content=popen.stdout.read()
+        self.render('check.html',content=content)
 class PubverHandler(BaseHandler): 
     @authenticated
-    @coroutine
     def get(self,env_id,prod_id,ver_id):
         ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
@@ -344,8 +352,7 @@ class PubverHandler(BaseHandler):
         publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),content='',time=datetime.now())
         self.session.add(publog)
         self.session.commit()        
-        print "cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" > "+log_path+str(publog.id)+".log"
-        popen=subprocess.Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+str(publog.id)+".log",shell=True)
+        popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+str(publog.id)+".log",shell=True)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
         self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
         

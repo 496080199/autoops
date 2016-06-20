@@ -39,6 +39,7 @@ class Application(Application):
                   url(r"/editver/([0-9]+)/([0-9]+)/([0-9]+)",EditverHandler,name='editver'),
                   url(r"/delver/([0-9]+)/([0-9]+)/([0-9]+)",DelverHandler,name='delver'),
                   url(r"/downver/([0-9]+)/([0-9]+)/([0-9]+)",DownverHandler,name='downver'),
+                  url(r"/check/([0-9]+)/([0-9]+)/([0-9]+)",CheckHandler,name='check'),
                   url(r"/pubver/([0-9]+)/([0-9]+)/([0-9]+)",PubverHandler,name='pubver'),
                   url(r"/viewpublog/([0-9]+)/([0-9]+)/([0-9]+)/([0-9]+)",ViewpublogHandler,name='viewpublog'),
                   url(r"/publog/([0-9]+)/([0-9]+)",PublogHandler,name='publog'),
