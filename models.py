@@ -20,11 +20,18 @@ class Env(Base):
     id=Column(INTEGER, primary_key = True)
     name=Column(VARCHAR(20),nullable=False)
     prod=relationship("Prod")
+class Class(Base):
+    __tablename__='Class'
+    id=Column(INTEGER, primary_key = True)
+    name=Column(VARCHAR(20),nullable=False)
+    prod=relationship("Prod", back_populates="classify")
 class Prod(Base):
     __tablename__='Prod'
     id=Column(INTEGER, primary_key = True)
     name=Column(VARCHAR(20),nullable=False)
     env_id=Column(Integer,ForeignKey('Env.id'))
+    class_id=Column(Integer,ForeignKey('Class.id'),default=1)
+    classify = relationship("Class", back_populates="prod")
     conf=relationship("Conf",uselist=False, back_populates="prod")
     conffile=relationship("Conffile")
     ver=relationship("Ver")
@@ -64,10 +71,9 @@ class Publog(Base):
     __tablename__='Publog'
     id=Column(INTEGER, primary_key = True)
     prod_id=Column(Integer,ForeignKey('Prod.id'))
-    ver_id=Column(Integer,nullable=False)
-    ver_name=Column(VARCHAR(20),nullable=False)
     user=Column(VARCHAR(20),nullable=False)
     time=Column(DATETIME,nullable=False,default=datetime.now())
+    log=Column(VARCHAR(100),nullable=False)
     content=Column(TEXT,nullable=False)
     
 class Config(Base):

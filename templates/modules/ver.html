@@ -4,6 +4,6 @@
                       <td>{{ver.pub_time}}</td>
                       <td>{{ver.ch_time}}</td>
                       <td><a href="/downver/{{env.id}}/{{prod.id}}/{{ver.id}}" >{{ver.file}}</a></td>
-                      <td><a href="/check/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="脚本检查" /></a>&nbsp;&nbsp;<a href="/pubver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini btn-primary" value="发布" /></a></td>
+                      <td><a href="/check/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="脚本检查" /></a>&nbsp;&nbsp;<a href="/pubver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini btn-primary" value="发布" onclick="if(confirm('您确定要执行吗?')==false) return false;"/></a></td>
                     </tr>
 </div>

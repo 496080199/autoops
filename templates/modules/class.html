@@ -1,0 +1,13 @@
+<div class="class{{classify.id}}">
+<tr>
+<td>
+{{classify.id}}
+</td>
+<td>
+{{classify.name}}
+</td>
+<td>
+<a href="/editclass/{{classify.id}}" ><input type="button" class="btn btn-mini" value="改" /></a><a href="/delclass/{{classify.id}}" ><input type="button" class="btn btn-mini" value="删" onclick="if(confirm('您确定要删除吗?')==false) return false;" /></a>
+</td>
+</tr>
+</div>

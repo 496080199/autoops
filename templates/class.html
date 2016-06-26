@@ -1,0 +1,36 @@
+{% extends "pagebase.html" %}
+{% block autopub %}class="active"{% end %}
+{% block left %}
+<ul class="nav nav-list well">
+<li>
+<h5>当前位置：</h5><br>
+&nbsp;&nbsp;分类管理
+
+</li>
+<br>
+<li>
+<a href="/newclass" ><input type="button" class="btn btn-small btn-primary" value="新增分类" /></a>
+</li>
+<br>
+<p><a href="/autopub">返回</a></p>
+</ul>
+{% end %}
+
+{% block content %}
+
+<table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>编号</th>
+                      <th>类别名称</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  
+                  {% for classify in classes %}
+					{% module Class(classify) %}
+				  {% end %}
+                  </tbody>
+</table>
+{% end %}

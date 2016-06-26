@@ -1,0 +1,14 @@
+{% extends "pagebase.html" %}
+{% block autopub %}class="active"{% end %}
+
+{% block content %}
+<form action="/editclass/{{classify.id}}" method="post">
+{% module xsrf_form_html() %} 
+<fieldset>
+<label>新分类名称</label> 
+<input type="text" name="name" placeholder="请输入新分类名称" />
+<br>
+<button class="btn btn-primary"  type="submit">保存</button>
+<a href="/class" ><input type="button" class="btn" value="取消" /></a></fieldset>
+</form>
+{% end %}

@@ -8,6 +8,9 @@ from models import *
 from modules import *
 import os,commands,re,time
 from subprocess import Popen,PIPE
+from crontab import CronTab
+
+user_cron=CronTab(user=True)
 
 
 
@@ -58,10 +61,24 @@ class AutopubHandler(BaseHandler):
         self.render('autopub.html',envs=envs)
 class EnvHandler(BaseHandler):
     @authenticated
-    def get(self,id):
+    def get(self,env_id,class_id):
+        env=self.session.query(Env).get(env_id)
+        if int(class_id) == 0:
+            prods=self.session.query(Prod).filter(Prod.env_id==env_id)
+        else:
+            prods=self.session.query(Prod).filter(Prod.env_id==env_id).filter(Prod.class_id==class_id)
+
+        classes=self.session.query(Class).all() 
+        self.render('env.html',prods=prods,env=env,classes=classes)
+    
+ 
+class EnvClassHandler(BaseHandler):
+    @authenticated
+    def get(self,id,class_id):
         env=self.session.query(Env).get(id)
-        prods=self.session.query(Prod).filter(Prod.env_id==id)  
-        self.render('env.html',prods=prods,env=env)        
+        prods=self.session.query(Prod).filter(Prod.env_id==id).filter(Prod.class_id==class_id)
+        classes=self.session.query(Class).all()
+        self.render('env.html',prods=prods,env=env,classes=classes)        
 class NewenvHandler(BaseHandler):
     @authenticated
     def get(self):
@@ -91,6 +108,54 @@ class DelenvHandler(BaseHandler):
         self.session.delete(env)
         self.session.commit()
         self.redirect("/autopub")
+class ClassHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        classes=self.session.query(Class).filter(Class.id!=0)
+        self.render('class.html',classes=classes)
+class NewclassHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        self.render('newclass.html')
+    @authenticated
+    def post(self):
+        name=self.get_argument('name')
+        classify=Class(name=name)
+        self.session.add(classify)
+        self.session.commit()
+        self.redirect("/class")
+class EditclassHandler(BaseHandler):
+    @authenticated
+    def get(self,class_id):
+        classify=self.session.query(Class).get(class_id)
+        self.render('editclass.html',classify=classify)
+    @authenticated  
+    def post(self,class_id):
+        name=self.get_argument('name')
+        classify=self.session.query(Class).get(class_id)
+        classify.name=name
+        self.session.commit()
+        self.redirect("/class")
+class DelclassHandler(BaseHandler):
+    @authenticated  
+    def get(self,class_id):
+        classify=self.session.query(Class).get(class_id)
+        self.session.delete(classify)
+        self.session.commit()
+        self.redirect("/class")
+class SetclassHandler(BaseHandler):
+    @authenticated  
+    def get(self,env_id,prod_id):
+        classes=self.session.query(Class).all()
+        prod=self.session.query(Prod).get(prod_id)
+        self.render('setclass.html',env_id=env_id,prod=prod,classes=classes)
+    @authenticated
+    def post(self,env_id,prod_id):
+        class_id=self.get_argument('class_id')
+        prod=self.session.query(Prod).get(prod_id)
+        prod.class_id=int(class_id)
+        self.session.commit()
+        self.redirect("/env/"+env_id+'/0')
 class NewprodHandler(BaseHandler):
     @authenticated
     def get(self,env_id):
@@ -104,7 +169,7 @@ class NewprodHandler(BaseHandler):
         conf=Conf(prod_id=prod.id)
         self.session.add(conf)
         self.session.commit()
-        self.redirect("/env/"+env_id)
+        self.redirect("/env/"+env_id+'/0')
 class EditprodHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):
@@ -116,7 +181,7 @@ class EditprodHandler(BaseHandler):
         prod=self.session.query(Prod).get(prod_id)
         prod.name=name
         self.session.commit()
-        self.redirect("/env/"+env_id)
+        self.redirect("/env/"+env_id+'/0')
 class DelprodHandler(BaseHandler):
     @authenticated  
     def get(self,env_id,prod_id):
@@ -125,7 +190,7 @@ class DelprodHandler(BaseHandler):
         self.session.delete(conf)
         self.session.delete(prod)
         self.session.commit()
-        self.redirect("/env/"+env_id)
+        self.redirect("/env/"+env_id+'/0')
 class ConfHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):
@@ -157,7 +222,18 @@ class ConfHandler(BaseHandler):
         conf.mon=self.get_argument('mon')
         conf.week=self.get_argument('week')
         self.session.commit()
-        self.redirect("/env/"+env_id)
+        if int(conf.time) == 1:
+            ver=self.session.query(Ver).order_by(desc(Ver.pub_time)).first()
+            job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+upload_path+"/logs/cron_"+datetime.now()+".log", comment='autoops_'+prod.name)
+            job.setall(conf.min+' '+conf.hour+' '+conf.day+' '+conf.mon+' '+conf.week)
+            job.enable()
+            user_cron.write_to_user(user=True)
+        else:
+            iter = cron.find_comment('autoops_'+prod.name)
+            for job in iter:
+                job.clear()
+            user_cron.write_to_user(user=True)
+        self.redirect("/env/"+env_id+'/0')
 class MessageHandler(BaseHandler):
     @authenticated
     def get(self,id):
@@ -249,11 +325,16 @@ class ViewconffileHandler(BaseHandler):
         self.redirect("/conffile/"+env_id+'/'+prod_id)
 class VerHandler(BaseHandler):
     @authenticated
-    def get(self,env_id,prod_id):
+    def get(self,env_id,prod_id,maj_id):
         env=self.session.query(Env).get(env_id)
         prod=self.session.query(Prod).get(prod_id)
-        vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).order_by(desc(Ver.pub_time))
-        self.render('ver.html',env=env,prod=prod,vers=vers)
+        if int(maj_id) == 0:
+            vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).order_by(desc(Ver.pub_time))
+            all_vers=vers
+        else:
+            vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).filter(Ver.major==maj_id).order_by(desc(Ver.pub_time)) 
+            all_vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).order_by(desc(Ver.pub_time)) 
+        self.render('ver.html',env=env,prod=prod,vers=vers,all_vers=all_vers)
 class NewverHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):
@@ -278,7 +359,7 @@ class NewverHandler(BaseHandler):
                 ver=Ver(name=name,major=major,minor=minor,revison=revison,file=filename,prod_id=prod_id)
                 self.session.add(ver)
                 self.session.commit()
-                self.redirect("/ver/"+env_id+'/'+prod_id)
+                self.redirect("/ver/"+env_id+'/'+prod_id+'/0')
             else:
                 self.redirect("/message/1")
         else:
@@ -303,7 +384,7 @@ class EditverHandler(BaseHandler):
             ver.file=filename
             ver.ch_time=datetime.now()
             self.session.commit()
-            self.redirect("/ver/"+env_id+'/'+prod_id) 
+            self.redirect("/ver/"+env_id+'/'+prod_id+'/0') 
         else:
             self.redirect("/message/2")
 class DelverHandler(BaseHandler):
@@ -316,7 +397,7 @@ class DelverHandler(BaseHandler):
             os.remove(filepath)
         self.session.delete(ver)
         self.session.commit()
-        self.redirect("/ver/"+env_id+'/'+prod_id)  
+        self.redirect("/ver/"+env_id+'/'+prod_id+'/0')  
 class DownverHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id,ver_id):
@@ -350,18 +431,17 @@ class PubverHandler(BaseHandler):
         log_path=os.path.join(upload_path,'logs/')
         if not os.path.exists(log_path):
             os.makedirs(log_path)
-        publog=Publog(prod_id=prod_id,ver_id=ver_id,ver_name=ver.name,user=self.get_current_user(),content='',time=datetime.now())
+        publog=Publog(prod_id=prod_id,user=self.get_current_user(),time=datetime.now(),log=u'发布了'+ver.name,content='')
         self.session.add(publog)
         self.session.commit()        
         popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+str(publog.id)+".log",shell=True)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
-        self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+ver_id+'/'+str(publog.id))
+        self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+str(publog.id))
         
 class ViewpublogHandler(BaseHandler):
     @authenticated
-    def get(self,env_id,prod_id,ver_id,publog_id):
+    def get(self,env_id,prod_id,publog_id):
         publog=self.session.query(Publog).get(publog_id)
-        ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         log_path=os.path.join(upload_path,'logs/'+publog_id+'.log')
         if os.path.exists(log_path):
@@ -369,14 +449,14 @@ class ViewpublogHandler(BaseHandler):
             publog.content=logfile.read()
             self.session.commit()
             logfile.close()
-        self.render('viewpublog.html',publog=publog,ver=ver)
+        self.render('viewpublog.html',publog=publog)
         
 class PublogHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):
         env=self.session.query(Env).get(env_id)
         prod=self.session.query(Prod).get(prod_id)
-        publogs=self.session.query(Publog).filter(Publog.prod_id==prod_id).order_by(desc(Publog.time))
+        publogs=self.session.query(Publog).filter(Publog.prod_id==prod_id).order_by(desc(Publog.time)).limit(50)
         self.render('publog.html',publogs=publogs,env=env,prod=prod)
         
     

@@ -13,11 +13,24 @@
 <a href="/newver/{{env.id}}/{{prod.id}}" ><input type="button" class="btn btn-small btn-primary" value="新增版本" /></a>
 </li>
 <br>
-<p><a href="/env/{{env.id}}">返回</a></p>
+<p><a href="/conf/{{env.id}}/{{prod.id}}" >转到配置</a></p>
+<p><a href="/conffile/{{env.id}}/{{prod.id}}" >转到配置文件</a></p>
+<p><a href="/publog/{{env.id}}/{{prod.id}}" >转到日志</a></p>
+<br>
+<p><a href="/env/{{env.id}}/0">返回</a></p>
 </ul>
 
 {% end %}
 {% block content %}
+<div>
+主版本：<br>
+<a href="/ver/{{env.id}}/{{prod.id}}/0" ><span class="label badge-info">全部</span></a>
+{% for ver in all_vers %}
+<a href="/ver/{{env.id}}/{{prod.id}}/{{ver.id}}" ><span class="label badge-info">{{ver.id}}</span></a>
+{% end %}
+<br>
+<br>
+</div>
 
 <table class="table table-bordered">
                   <thead>

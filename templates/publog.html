@@ -9,8 +9,11 @@
 
 </li>
 <br>
+<p><a href="/conf/{{env.id}}/{{prod.id}}" >转到配置</a></p>
+<p><a href="/conffile/{{env.id}}/{{prod.id}}" >转到配置文件</a></p>
+<p><a href="/ver/{{env.id}}/{{prod.id}}/0" >转到版本管理</a></p>
 <br>
-<p><a href="/env/{{env.id}}">返回</a></p>
+<p><a href="/env/{{env.id}}/0">返回</a></p>
 </ul>
 
 {% end %}
@@ -18,7 +21,7 @@
 
 <ol>
 {% for publog in publogs %}
-<li>{{publog.user}}用户在{{publog.time}}发布了{{publog.ver_name}} <a href="/viewpublog/{{env.id}}/{{prod.id}}/{{publog.ver_id}}/{{publog.id}}">查看日志</a></li><br>
+<li>{{publog.user}}用户在{{publog.time}}{{publog.log}} <a href="/viewpublog/{{env.id}}/{{prod.id}}/{{publog.id}}">查看日志</a></li><br>
 {% end %}
 </ol>
 
