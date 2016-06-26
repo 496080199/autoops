@@ -224,10 +224,14 @@ class ConfHandler(BaseHandler):
         self.session.commit()
         if int(conf.time) == 1:
             ver=self.session.query(Ver).order_by(desc(Ver.pub_time)).first()
-            job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+upload_path+"/logs/cron_"+datetime.now()+".log", comment='autoops_'+prod.name)
-            job.setall(conf.min+' '+conf.hour+' '+conf.day+' '+conf.mon+' '+conf.week)
-            job.enable()
-            user_cron.write_to_user(user=True)
+            if ver:
+                job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+upload_path+"/logs/cron_`date +%Y%m%d%H%I%S'.log", comment='autoops_'+prod.name)
+                job.setall(conf.min+' '+conf.hour+' '+conf.day+' '+conf.mon+' '+conf.week)
+                job.enable()
+                user_cron.write_to_user(user=True)
+            else:
+                conf.time=0
+                self.session.commit()
         else:
             iter = cron.find_comment('autoops_'+prod.name)
             for job in iter:
