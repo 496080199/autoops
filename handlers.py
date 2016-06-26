@@ -222,8 +222,8 @@ class ConfHandler(BaseHandler):
         conf.mon=self.get_argument('mon')
         conf.week=self.get_argument('week')
         self.session.commit()
+        prod=self.session.query(Prod).get(prod_id)
         if int(conf.time) == 1:
-            prod=self.session.query(Prod).get(prod_id)
             ver=self.session.query(Ver).order_by(desc(Ver.pub_time)).first()
             if ver:
                 job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+upload_path+"/logs/cron_`date +%Y%m%d%H%I%S`.log", comment='autoops_'+prod.name)
@@ -234,9 +234,9 @@ class ConfHandler(BaseHandler):
                 conf.time=0
                 self.session.commit()
         else:
-            iter = cron.find_comment('autoops_'+prod.name)
+            iter = user_cron.find_comment('autoops_'+prod.name)
             for job in iter:
-                job.clear()
+                user_cron.remove(job)
             user_cron.write_to_user(user=True)
         self.redirect("/env/"+env_id+'/0')
 class MessageHandler(BaseHandler):
