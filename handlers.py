@@ -477,7 +477,7 @@ class CronlogHandler(BaseHandler):
         log_path=os.path.join(upload_path,'logs')
         out=commands.getoutput('ls '+log_path+'/cron_*.log')
         crons=out.split('\n')
-        self.render('cronlog.html',env_id,prod_id,crons=crons)
+        self.render('cronlog.html',env_id=env_id,prod_id=prod_id,crons=crons)
 class ViewcronlogHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id,log_name):
