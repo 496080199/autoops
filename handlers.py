@@ -333,13 +333,16 @@ class VerHandler(BaseHandler):
     def get(self,env_id,prod_id,maj_id):
         env=self.session.query(Env).get(env_id)
         prod=self.session.query(Prod).get(prod_id)
+        all_vers=self.session.query(Ver).filter(Ver.prod_id==prod_id) 
+        majs=[]
+        for ver in all_vers:
+            majs.append(ver.major)
+        majs=list(set(majs))
         if int(maj_id) == 0:
             vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).order_by(desc(Ver.pub_time))
-            all_vers=vers
         else:
             vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).filter(Ver.major==maj_id).order_by(desc(Ver.pub_time)) 
-            all_vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).order_by(desc(Ver.pub_time)) 
-        self.render('ver.html',env=env,prod=prod,vers=vers,all_vers=all_vers)
+        self.render('ver.html',env=env,prod=prod,vers=vers,majs=majs)
 class NewverHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):

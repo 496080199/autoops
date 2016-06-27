@@ -25,8 +25,8 @@
 <div>
 主版本：<br>
 <a href="/ver/{{env.id}}/{{prod.id}}/0" ><span class="label badge-info">全部</span></a>
-{% for ver in all_vers %}
-<a href="/ver/{{env.id}}/{{prod.id}}/{{ver.id}}" ><span class="label badge-info">{{ver.id}}</span></a>
+{% for maj in majs %}
+<a href="/ver/{{env.id}}/{{prod.id}}/{{maj}}" ><span class="label badge-info">{{maj}}</span></a>
 {% end %}
 <br>
 <br>
