@@ -208,6 +208,9 @@ class ConfHandler(BaseHandler):
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         if not os.path.exists(upload_path):
             os.makedirs(upload_path)
+        log_path=os.path.join(upload_path,'cronlogs')
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
         rulespath=os.path.join(upload_path,prod_id+'.yml')
         hostspath=os.path.join(upload_path,prod_id+'.host')
         conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
@@ -230,7 +233,7 @@ class ConfHandler(BaseHandler):
         if int(conf.time) == 1:
             ver=self.session.query(Ver).order_by(desc(Ver.pub_time)).first()
             if ver:
-                job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+upload_path+"/logs/cron_`date +%Y%m%d%H%I%S`.log", comment='autoops_'+prod.name)
+                job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+"/cron_`date +%Y%m%d%H%I%S`.log", comment='autoops_'+prod.name+'_'+prod_id)
                 job.setall(conf.min+' '+conf.hour+' '+conf.day+' '+conf.mon+' '+conf.week)
                 job.enable()
                 user_cron.write_to_user(user=True)
@@ -238,7 +241,7 @@ class ConfHandler(BaseHandler):
                 conf.time=0
                 self.session.commit()
         else:
-            iter = user_cron.find_comment('autoops_'+prod.name)
+            iter = user_cron.find_comment('autoops_'+prod.name+'_'+prod_id)
             for job in iter:
                 user_cron.remove(job)
             user_cron.write_to_user(user=True)
@@ -474,8 +477,8 @@ class CronlogHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
-        log_path=os.path.join(upload_path,'logs')
-        out=commands.getoutput('ls '+log_path+'/cron_*')
+        log_path=os.path.join(upload_path,'cronlogs')
+        out=commands.getoutput('ls '+log_path)
         crons=out.split('\n')
         self.render('cronlog.html',env_id=env_id,prod_id=prod_id,crons=crons)
 class ViewcronlogHandler(BaseHandler):
