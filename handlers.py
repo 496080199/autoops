@@ -143,6 +143,7 @@ class DelclassHandler(BaseHandler):
         prods=self.session.query(Prod).filter(Prod.class_id==class_id)
         for prod in prods:
             prod.class_id=1
+            self.session.commit()
         self.session.delete(classify)
         self.session.commit()
         self.redirect("/class")
