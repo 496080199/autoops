@@ -3,8 +3,8 @@
                       <td>{{prod.name}}&nbsp;&nbsp;<a href="/editprod/{{env.id}}/{{prod.id}}"><input type="button" class="btn btn-mini" value="改" /></a><a href="/delprod/{{env.id}}/{{prod.id}}"><input type="button" class="btn btn-mini" value="删" onclick="if(confirm('您确定要删除吗?')==false) return false;" /></a></td>
                       <td>{{prod.classify.name}}<a href="/setclass/{{env.id}}/{{prod.id}}"><input type="button" class="btn btn-mini" value="设置" /></a></td>
                       <td><a href="/conf/{{env.id}}/{{prod.id}}">设置</a></td>
-                      <td><a href="/conffile/{{env.id}}/{{prod.id}}">【{{len(prod.conffile)}}】</a></td>
-                      <td><a href="/ver/{{env.id}}/{{prod.id}}/0">【{{len(prod.ver)}}】</a></td>
+                      <td><a href="/conffile/{{env.id}}/{{prod.id}}">【{{len(prod.conffile)}}个】</a></td>
+                      <td><a href="/ver/{{env.id}}/{{prod.id}}/0">【{{len(prod.ver)}}个】</a></td>
                       <td><a href="/publog/{{env.id}}/{{prod.id}}">查看日志</a></td>
                     </tr>
 </div>
