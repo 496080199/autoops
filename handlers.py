@@ -140,6 +140,9 @@ class DelclassHandler(BaseHandler):
     @authenticated  
     def get(self,class_id):
         classify=self.session.query(Class).get(class_id)
+        prods=self.session.query(Prod).filter(Prod.class_id==class_id)
+        for prod in prods:
+            prod.class_id=1
         self.session.delete(classify)
         self.session.commit()
         self.redirect("/class")
