@@ -485,6 +485,7 @@ class ViewcronlogHandler(BaseHandler):
     def get(self,env_id,prod_id,log_name):
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         log_path=os.path.join(upload_path,'logs')
+        print log_path+'/'+log_name
         log_file=open(log_path+'/'+log_name,'rb')
         content=log_file.read()
         self.render('viewcronlog.html',content=content)
