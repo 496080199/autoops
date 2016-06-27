@@ -233,7 +233,7 @@ class ConfHandler(BaseHandler):
         if int(conf.time) == 1:
             ver=self.session.query(Ver).order_by(desc(Ver.pub_time)).first()
             if ver:
-                job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+"/cron_`date +%Y%m%d%H%I%S`.log", comment='autoops_'+prod.name+'_'+prod_id)
+                job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+"/cron_$(date +%Y%m%d%H%I%S).log", comment='autoops_'+prod.name+'_'+prod_id)
                 job.setall(conf.min+' '+conf.hour+' '+conf.day+' '+conf.mon+' '+conf.week)
                 job.enable()
                 user_cron.write_to_user(user=True)
