@@ -1,0 +1,12 @@
+{% extends "pagebase.html" %}
+{% block autopub %}class="active"{% end %}
+
+{% block content %}
+定时任务日志：
+<ul>
+{% for cron in crons %}
+<a href="/viewcronlog/{{env_id}}/{{prod_id}}/{{cron}}"><li>{{cron}}</li></a>
+{% end %}
+</ul>
+
+{% end %}

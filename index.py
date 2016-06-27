@@ -48,6 +48,8 @@ class Application(Application):
                   url(r"/pubver/([0-9]+)/([0-9]+)/([0-9]+)",PubverHandler,name='pubver'),
                   url(r"/viewpublog/([0-9]+)/([0-9]+)/([0-9]+)",ViewpublogHandler,name='viewpublog'),
                   url(r"/publog/([0-9]+)/([0-9]+)",PublogHandler,name='publog'),
+                  url(r"/cronlog/([0-9]+)/([0-9]+)",CronlogHandler,name='cronlog'),
+                  url(r"/viewcronlog/([0-9]+)/([0-9]+)/(w+)",ViewcronlogHandler,name='viewcronlog'),
         ]
         settings = {
         "ui_modules":{'Env': EnvModule,'Class':ClassModule,'Prod':ProdModule,'Conffile':ConffileModule,'Ver':VerModule},

@@ -470,7 +470,22 @@ class PublogHandler(BaseHandler):
         prod=self.session.query(Prod).get(prod_id)
         publogs=self.session.query(Publog).filter(Publog.prod_id==prod_id).order_by(desc(Publog.time)).limit(50)
         self.render('publog.html',publogs=publogs,env=env,prod=prod)
-        
+class CronlogHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id):
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        log_path=os.path.join(upload_path,'logs')
+        out=commands.getoutput('ls '+log_path+'/cron_*.log')
+        crons=out.split('\n')
+        self.render('cronlog.html',env_id,prod_id,crons=crons)
+class ViewcronlogHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,log_name):
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        log_path=os.path.join(upload_path,'logs')
+        log_file=open(log_path+'/'+log_name,'rb')
+        content=log_file.read()
+        self.render('viewcronlog.html',content=content)
     
         
         
