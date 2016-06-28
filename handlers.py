@@ -10,7 +10,7 @@ import os,commands,re,time
 from subprocess import Popen,PIPE
 from crontab import CronTab
 
-user_cron=CronTab(user=True)
+
 
 
 
@@ -456,7 +456,8 @@ class TimepubHandler(BaseHandler):
         timepub=self.session.query(Timepub).filter(Timepub.ver_id==ver_id).one()
         self.render('timepub.html',env_id=env_id,prod_id=prod_id,ver_id=ver_id,timepub=timepub) 
     @authenticated
-    def post(self,env_id,prod_id,ver_id): 
+    def post(self,env_id,prod_id,ver_id):
+        user_cron=CronTab(user=True) 
         timepub=self.session.query(Timepub).filter(Timepub.ver_id==ver_id).one()
         timepub.time=self.get_argument('time')
         timepub.min=self.get_argument('min')
@@ -472,7 +473,7 @@ class TimepubHandler(BaseHandler):
             for job in iter:
                 if job:
                     user_cron.remove(job)
-                user_cron.write_to_user(user=True)
+                    user_cron.write_to_user(user=True)
             job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee cronlogs/cron_$(date +\%Y\%m\%d\%H\%M\%S).log", comment='autoops_'+ver.name+'_'+ver_id)
             job.setall(timepub.min+' '+timepub.hour+' '+timepub.day+' '+timepub.mon+' '+timepub.week)
             job.enable()
