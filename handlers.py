@@ -63,12 +63,20 @@ class EnvHandler(BaseHandler):
     @authenticated
     def get(self,env_id,class_id):
         env=self.session.query(Env).get(env_id)
+        all_prods=self.session.query(Prod).filter(Prod.env_id==env_id)
+        classids=[]
+        for prod in all_prods:
+            classids.append(prod.class_id)
+        classids=list(set(classids))
+        classes=[]
+        for classid in classids:
+            classify=self.session.query(Class).get(classid)
+            classes.append(classify)
         if int(class_id) == 0:
             prods=self.session.query(Prod).filter(Prod.env_id==env_id)
         else:
             prods=self.session.query(Prod).filter(Prod.env_id==env_id).filter(Prod.class_id==class_id)
 
-        classes=self.session.query(Class).all() 
         self.render('env.html',prods=prods,env=env,classes=classes)
     
  
@@ -222,29 +230,9 @@ class ConfHandler(BaseHandler):
         hosts=open(hostspath,'wb')
         hosts.write(conf.hosts)
         hosts.close()
-        conf.time=self.get_argument('time')
-        conf.min=self.get_argument('min')
-        conf.hour=self.get_argument('hour')
-        conf.day=self.get_argument('day')
-        conf.mon=self.get_argument('mon')
-        conf.week=self.get_argument('week')
+        
         self.session.commit()
-        prod=self.session.query(Prod).get(prod_id)
-        if int(conf.time) == 1:
-            ver=self.session.query(Ver).order_by(desc(Ver.pub_time)).first()
-            if ver:
-                job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee cronlogs/cron_$(date +\%Y\%m\%d\%H\%M\%S).log", comment='autoops_'+prod.name+'_'+prod_id)
-                job.setall(conf.min+' '+conf.hour+' '+conf.day+' '+conf.mon+' '+conf.week)
-                job.enable()
-                user_cron.write_to_user(user=True)
-            else:
-                conf.time=0
-                self.session.commit()
-        else:
-            iter = user_cron.find_comment('autoops_'+prod.name+'_'+prod_id)
-            for job in iter:
-                user_cron.remove(job)
-            user_cron.write_to_user(user=True)
+        
         self.redirect("/env/"+env_id+'/0')
 class MessageHandler(BaseHandler):
     @authenticated
@@ -371,8 +359,11 @@ class NewverHandler(BaseHandler):
             if not os.path.exists(filepath):
                 with open(filepath,'wb') as up:
                     up.write(meta['body'])
-                ver=Ver(name=name,major=major,minor=minor,revison=revison,file=filename,prod_id=prod_id)
+                ver=Ver(name=name,major=major,minor=minor,revison=revison,file=filename,prod_id=prod_id,pub_time=datetime.now(),ch_time=datetime.now())
                 self.session.add(ver)
+                self.session.commit()
+                timepub=Timepub(ver_id=ver.id)
+                self.session.add(timepub)
                 self.session.commit()
                 self.redirect("/ver/"+env_id+'/'+prod_id+'/0')
             else:
@@ -410,6 +401,13 @@ class DelverHandler(BaseHandler):
         filepath=os.path.join(upload_path,ver.file)
         if os.path.exists(filepath):
             os.remove(filepath)
+        iter = user_cron.find_comment('autoops_'+ver.name+'_'+ver_id)
+        for job in iter:
+            user_cron.remove(job)
+        user_cron.write_to_user(user=True) 
+        timepub=self.session.query(Ver).get(ver_id).timepub
+        self.session.delete(timepub)
+        self.session.commit()
         self.session.delete(ver)
         self.session.commit()
         self.redirect("/ver/"+env_id+'/'+prod_id+'/0')  
@@ -452,7 +450,39 @@ class PubverHandler(BaseHandler):
         popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+str(publog.id)+".log",shell=True)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
         self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+str(publog.id))
-        
+class TimepubHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id,ver_id):
+        timepub=self.session.query(Timepub).filter(Timepub.ver_id==ver_id).one()
+        self.render('timepub.html',env_id=env_id,prod_id=prod_id,ver_id=ver_id,timepub=timepub) 
+    @authenticated
+    def post(self,env_id,prod_id,ver_id): 
+        timepub=self.session.query(Timepub).filter(Timepub.ver_id==ver_id).one()
+        timepub.time=self.get_argument('time')
+        timepub.min=self.get_argument('min')
+        timepub.hour=self.get_argument('hour')
+        timepub.day=self.get_argument('day')
+        timepub.mon=self.get_argument('mon')
+        timepub.week=self.get_argument('week')
+        self.session.commit()
+        ver=self.session.query(Ver).get(ver_id)
+        upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+        if int(timepub.time) == 1:
+            iter = user_cron.find_comment('autoops_'+ver.name+'_'+ver_id)
+            for job in iter:
+                if job:
+                    user_cron.remove(job)
+                user_cron.write_to_user(user=True)
+            job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee cronlogs/cron_$(date +\%Y\%m\%d\%H\%M\%S).log", comment='autoops_'+ver.name+'_'+ver_id)
+            job.setall(timepub.min+' '+timepub.hour+' '+timepub.day+' '+timepub.mon+' '+timepub.week)
+            job.enable()
+            user_cron.write_to_user(user=True)
+        else:
+            iter = user_cron.find_comment('autoops_'+ver.name+'_'+ver_id)
+            for job in iter:
+                user_cron.remove(job)
+            user_cron.write_to_user(user=True) 
+        self.redirect("/ver/"+env_id+'/'+prod_id+'/0')
 class ViewpublogHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id,publog_id):

@@ -43,12 +43,7 @@ class Conf(Base):
     prod=relationship("Prod", back_populates="conf")
     rules=Column(TEXT(500),nullable=False,default="---\n")
     hosts=Column(TEXT(100),nullable=False,default="")
-    time=Column(BOOLEAN,nullable=False,default=False)
-    min=Column(VARCHAR(10),nullable=False,default="0")
-    hour=Column(VARCHAR(10),nullable=False,default="0")
-    day=Column(VARCHAR(10),nullable=False,default="*")
-    mon=Column(VARCHAR(10),nullable=False,default="*")
-    week=Column(VARCHAR(10),nullable=False,default="*")
+    
 class Conffile(Base):
     __tablename__='Conffile'
     id=Column(INTEGER, primary_key = True)
@@ -67,6 +62,18 @@ class Ver(Base):
     pub_time=Column(DATETIME,nullable=False,default=datetime.now())
     ch_time=Column(DATETIME,nullable=False,default=datetime.now())
     file=Column(VARCHAR(100),nullable=False)
+    timepub=relationship("Timepub",uselist=False, back_populates="ver")
+class Timepub(Base):
+    __tablename__='Timepub'
+    id=Column(INTEGER, primary_key = True)
+    ver_id=Column(Integer,ForeignKey('Ver.id'))
+    ver=relationship("Ver", back_populates="timepub")
+    time=Column(BOOLEAN,nullable=False,default=False)
+    min=Column(VARCHAR(10),nullable=False,default="0")
+    hour=Column(VARCHAR(10),nullable=False,default="0")
+    day=Column(VARCHAR(10),nullable=False,default="*")
+    mon=Column(VARCHAR(10),nullable=False,default="*")
+    week=Column(VARCHAR(10),nullable=False,default="*")
 class Publog(Base):
     __tablename__='Publog'
     id=Column(INTEGER, primary_key = True)

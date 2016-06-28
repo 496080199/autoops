@@ -46,6 +46,7 @@ class Application(Application):
                   url(r"/downver/([0-9]+)/([0-9]+)/([0-9]+)",DownverHandler,name='downver'),
                   url(r"/check/([0-9]+)/([0-9]+)/([0-9]+)",CheckHandler,name='check'),
                   url(r"/pubver/([0-9]+)/([0-9]+)/([0-9]+)",PubverHandler,name='pubver'),
+                  url(r"/timepub/([0-9]+)/([0-9]+)/([0-9]+)",TimepubHandler,name='timepub'),
                   url(r"/viewpublog/([0-9]+)/([0-9]+)/([0-9]+)",ViewpublogHandler,name='viewpublog'),
                   url(r"/publog/([0-9]+)/([0-9]+)",PublogHandler,name='publog'),
                   url(r"/cronlog/([0-9]+)/([0-9]+)",CronlogHandler,name='cronlog'),

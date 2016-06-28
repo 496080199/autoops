@@ -36,19 +36,7 @@
 <br>
 <label>主机（组）</label>
 <textarea class="form-control" name="hosts" placeholder="请输入主机（组）" rows="6" cols="50" style="margin: 0px 0px 10px; width: 800px; height: 160px;">{{conf.hosts}}</textarea> 
-<label>定时任务</label> 
-<select name="time" >
-<option value=1 {% if conf.time ==1 %}selected{% end %}>开启
-<option value=0 {% if conf.time ==0 %}selected{% end %}>不开启
-</select>
-<br>
-<br>
-分：<input type="text" name="min" value="{{conf.min}}" /><br>
-时：<input type="text" name="hour" value="{{conf.hour}}"/><br>
-日：<input type="text" name="day" value="{{conf.day}}" /><br>
-月：<input type="text" name="mon" value="{{conf.mon}}" /><br>
-周：<input type="text" name="week" value="{{conf.week}}" /><br>
 <button class="btn btn-primary"  type="submit">保存</button>
-<button class="btn" >取消</button></fieldset>
+<input type="button" name="submit" onclick="javascript:history.back(-1);" value="返回"></fieldset>
 </form>
 {% end %}
