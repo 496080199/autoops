@@ -448,7 +448,7 @@ class PubverHandler(BaseHandler):
         publog=Publog(prod_id=prod_id,user=self.get_current_user(),time=datetime.now(),log=u'发布了'+ver.name,content='')
         self.session.add(publog)
         self.session.commit()        
-        popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee "+log_path+str(publog.id)+".log",shell=True)
+        popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"ver="+ver.file+"\" | tee "+log_path+str(publog.id)+".log",shell=True)
         #status,output=commands.getstatusoutput('cd '+upload_path+'&&ansible-playbook '+prod_id+'.yml -i '+prod_id+'.host -e "bag='+ver.file+'"')
         self.redirect("/viewpublog/"+env_id+'/'+prod_id+'/'+str(publog.id))
 class TimepubHandler(BaseHandler):
@@ -475,7 +475,7 @@ class TimepubHandler(BaseHandler):
                 if job:
                     user_cron.remove(job)
                     user_cron.write_to_user(user=True)
-            job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" | tee cronlogs/cron_$(date +\%Y\%m\%d\%H\%M\%S).log", comment='autoops_'+ver.name+'_'+ver_id)
+            job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"ver="+ver.file+"\" | tee cronlogs/cron_$(date +\%Y\%m\%d\%H\%M\%S).log", comment='autoops_'+ver.name+'_'+ver_id)
             job.setall(timepub.min+' '+timepub.hour+' '+timepub.day+' '+timepub.mon+' '+timepub.week)
             job.enable()
             user_cron.write_to_user(user=True)
