@@ -10,7 +10,8 @@ import os,commands,re,time
 from subprocess import Popen,PIPE
 from crontab import CronTab
 
-
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 
