@@ -35,7 +35,7 @@ class LoginHandler(BaseHandler):
         password=self.get_argument('password')
         user=self.session.query(User).filter(User.username==username).one()
         if password == user.password:
-            self.set_secure_cookie("user", username,expires=time.time()+900)
+            self.set_secure_cookie("user", username,expires=time.time()+2700)
             self.redirect('dashboard')
         else:
             self.redirect("login")
@@ -508,10 +508,12 @@ class PublogHandler(BaseHandler):
 class CronlogHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):
+        env=self.session.query(Env).get(env_id)
+        prod=self.session.query(Prod).get(prod_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
         log_path=os.path.join(upload_path,'cronlogs')
         crons=os.listdir(log_path)
-        self.render('cronlog.html',env_id=env_id,prod_id=prod_id,crons=crons)
+        self.render('cronlog.html',env=env,prod=prod,crons=crons)
 class ViewcronlogHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id,log_name):

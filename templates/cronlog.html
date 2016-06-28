@@ -1,11 +1,29 @@
 {% extends "pagebase.html" %}
 {% block autopub %}class="active"{% end %}
+{% block left %}
+<ul class="nav nav-list well">
+<li>
+<h5>当前位置：</h5><br>
+&nbsp;&nbsp;{{env.name}}环境<br>
+&nbsp;&nbsp;>{{prod.name}}_定时日志
 
+</li>
+
+<br>
+<p><a href="/conf/{{env.id}}/{{prod.id}}" >转到配置</a></p>
+<p><a href="/conffile/{{env.id}}/{{prod.id}}" >转到配置文件</a></p>
+<p><a href="/ver/{{env.id}}/{{prod.id}}/0" >转到版本管理</a></p>
+<p><a href="/publog/{{env.id}}/{{prod.id}}" >转到手动日志</a></p>
+<br>
+<p><a href="/env/{{env.id}}/0">返回</a></p>
+</ul>
+
+{% end %}
 {% block content %}
 定时任务日志：
 <ul>
 {% for cron in crons %}
-<a href="/viewcronlog/{{env_id}}/{{prod_id}}/{{cron}}"><li>{{cron}}</li></a>
+<a href="/viewcronlog/{{env.id}}/{{prod.id}}/{{cron}}"><li>{{cron}}</li></a>
 {% end %}
 </ul>
 <input type="button" name="submit" onclick="javascript:history.back(-1);" value="返回">
