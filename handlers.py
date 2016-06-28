@@ -475,7 +475,7 @@ class TimepubHandler(BaseHandler):
                 if job:
                     user_cron.remove(job)
                     user_cron.write_to_user(user=True)
-            job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"ver="+ver.file+"\" | tee cronlogs/cron_$(date +\%Y\%m\%d\%H\%M\%S).log", comment='autoops_'+ver.name+'_'+ver_id)
+            job = user_cron.new(command="cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"ver="+ver.file+"\" | tee cronlogs/cron_"+ver.name+"_$(date +\%Y\%m\%d\%H\%M\%S).log", comment='autoops_'+ver.name+'_'+ver_id)
             job.setall(timepub.min+' '+timepub.hour+' '+timepub.day+' '+timepub.mon+' '+timepub.week)
             job.enable()
             user_cron.write_to_user(user=True)
