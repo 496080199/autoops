@@ -347,7 +347,7 @@ class ImportverHandler(BaseHandler):
         conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
         if conf.fetch == 1:
             time=datetime.now().strftime("%Y%m%d%H%M%S")
-            major=int(time.strftime("%Y%m"))
+            major=int(datetime.now().strftime("%Y%m"))
             files_path=os.path.join(os.path.dirname(__file__),'files/')
             upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
             dest=upload_path+"/"+time+".pak"
