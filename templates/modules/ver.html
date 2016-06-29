@@ -1,10 +1,10 @@
 <div class="ver{{ver.id}}">
 <tr>
-                      <td>{{ver.name}}&nbsp;&nbsp;<a href="/editver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="重传" /></a><a href="/delver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="删" onclick="if(confirm('您确定要删除吗?')==false) return false;" /></a></td>
+                      <td>{{ver.name}}<br>&nbsp;&nbsp;<a href="/editver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="重传" /></a><a href="/delver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="删" onclick="if(confirm('您确定要删除吗?')==false) return false;" /></a></td>
                       <td>{{ver.pub_time}}</td>
                       <td>{{ver.ch_time}}</td>
                       <td><a href="/downver/{{env.id}}/{{prod.id}}/{{ver.id}}" >{{ver.file}}</a></td>
-                      <td><a href="/check/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="脚本检查" /></a>&nbsp;&nbsp;<a href="/pubver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini btn-primary" value="发布" onclick="if(confirm('您确定要执行吗?')==false) return false;"/></a>&nbsp;&nbsp;<a href="/timepub/{{env.id}}/{{prod.id}}/{{ver.id}}" ><input type="button" class="btn btn-mini btn-primary" value="定时发布" /></a>（{% if ver.timepub.time == True %}已开启{% else %}已关闭{% end %}）
+                      <td><a href="/check/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini" value="脚本检查" /></a><br>&nbsp;&nbsp;<a href="/pubver/{{env.id}}/{{prod.id}}/{{ver.id}}"><input type="button" class="btn btn-mini btn-primary" value="发布" onclick="if(confirm('您确定要执行吗?')==false) return false;"/></a>&nbsp;&nbsp;<a href="/timepub/{{env.id}}/{{prod.id}}/{{ver.id}}" ><input type="button" class="btn btn-mini btn-primary" value="定时发布" /></a>（{% if ver.timepub.time == True %}已开启{% else %}已关闭{% end %}）
                       </td>
 
                     </tr>
