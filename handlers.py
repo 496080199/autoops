@@ -347,12 +347,13 @@ class ImportverHandler(BaseHandler):
         conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
         if conf.fetch == 1:
             time=datetime.now().strftime("%Y%m%d%H%M%S")
+            major=int(time.strftime("%Y%m"))
             files_path=os.path.join(os.path.dirname(__file__),'files/')
             upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
             dest=upload_path+"/"+time+".pak"
             status,output=commands.getstatusoutput("cd "+files_path+"&&ansible-playbook fetch.yml -i hosts -e \"host="+conf.host+" src="+conf.src+" dest="+dest+"\" ")
             if int(status) == 0:
-                ver=Ver(name=time,major=0,minor=0,revison=0,file=time+".pak",prod_id=prod_id,pub_time=datetime.now(),ch_time=datetime.now())
+                ver=Ver(name=time,major=major,minor=0,revison=0,file=time+".pak",prod_id=prod_id,pub_time=datetime.now(),ch_time=datetime.now())
                 self.session.add(ver)
                 self.session.commit()
                 timepub=Timepub(ver_id=ver.id)
