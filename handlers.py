@@ -457,7 +457,7 @@ class CheckHandler(BaseHandler):
     def get(self,env_id,prod_id,ver_id):
         ver=self.session.query(Ver).get(ver_id)
         upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)     
-        popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"bag="+ver.file+"\" --syntax-check",shell=True,stdout=PIPE)
+        popen=Popen("cd "+upload_path+"&&ansible-playbook "+prod_id+".yml -i "+prod_id+".host -e \"ver="+ver.file+"\" --syntax-check",shell=True,stdout=PIPE)
         popen.wait()
         content=popen.stdout.read()
         self.render('check.html',content=content)
