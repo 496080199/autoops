@@ -36,7 +36,17 @@
 {% end %}
 <br>
 <label>主机（组）</label>
-<textarea class="form-control" name="hosts" placeholder="请输入主机（组）" rows="6" cols="50" style="margin: 0px 0px 10px; width: 800px; height: 200px;">{{conf.hosts}}</textarea> 
+<textarea class="form-control" name="hosts" placeholder="请输入主机（组）" rows="6" cols="50" style="margin: 0px 0px 10px; width: 800px; height: 200px;">{{conf.hosts}}</textarea>
+<label>是否导入版本</label> 
+<select name="fetch" >
+<option value=1 {% if conf.fetch ==1 %}selected{% end %}>是
+<option value=0 {% if conf.fetch ==0 %}selected{% end %}>否
+</select>
+<br>
+<br>
+主机：<input type="text" name="host" value="{{conf.host}}" /><br>
+路径：<input type="text" name="src" value="{{conf.src}}"/><br>
+
 <button class="btn btn-primary"  type="submit">保存</button>
 <input type="button" name="submit" onclick="javascript:history.back(-1);" value="返回"></fieldset>
 </form>

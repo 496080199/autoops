@@ -231,7 +231,9 @@ class ConfHandler(BaseHandler):
         hosts=open(hostspath,'wb')
         hosts.write(conf.hosts)
         hosts.close()
-        
+        conf.fetch=self.get_argument('fetch')
+        conf.host=self.get_argument('host')
+        conf.src=self.get_argument('src')
         self.session.commit()
         
         self.redirect("/env/"+env_id+'/0')
@@ -339,6 +341,23 @@ class VerHandler(BaseHandler):
         else:
             vers=self.session.query(Ver).filter(Ver.prod_id==prod_id).filter(Ver.major==maj_id).order_by(desc(Ver.pub_time)) 
         self.render('ver.html',env=env,prod=prod,vers=vers,majs=majs)
+class ImportverHandler(BaseHandler):
+    @authenticated
+    def get(self,env_id,prod_id):
+        conf=self.session.query(Conf).filter(Conf.prod_id==prod_id).one()
+        if conf.fetch == 1:
+            time=datetime.now().strftime("%Y%m%d%H%M%S")
+            files_path=os.path.join(os.path.dirname(__file__),'files/')
+            upload_path=os.path.join(os.path.dirname(__file__),'files/'+env_id+'/'+prod_id)
+            dest=upload_path+"/"+time+".pak"
+            status,output=commands.getstatusoutput("cd "+files_path+"&&ansible-playbook fetch.yml -i hosts -e \"host="+conf.host+" src="+conf.src+" dest="+dest+"\" ")
+            if int(status) == 0:
+                ver=Ver(name=time,major=0,minor=0,revison=0,file=time+".pak",prod_id=prod_id,pub_time=datetime.now(),ch_time=datetime.now())
+                self.session.add(ver)
+                self.session.commit()
+            self.redirect("/ver/"+env_id+'/'+prod_id+'/0')
+        else:
+            self.redirect("/message/3")
 class NewverHandler(BaseHandler):
     @authenticated
     def get(self,env_id,prod_id):

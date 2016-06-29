@@ -43,6 +43,9 @@ class Conf(Base):
     prod=relationship("Prod", back_populates="conf")
     rules=Column(TEXT(500),nullable=False,default="---\n")
     hosts=Column(TEXT(100),nullable=False,default="")
+    fetch=Column(BOOLEAN,nullable=False,default=False)
+    host=Column(VARCHAR(100),default="")
+    src=Column(VARCHAR(100),default="")
     
 class Conffile(Base):
     __tablename__='Conffile'

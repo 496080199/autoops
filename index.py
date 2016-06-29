@@ -40,6 +40,7 @@ class Application(Application):
                   url(r"/delconffile/([0-9]+)/([0-9]+)/([0-9]+)",DelconffileHandler,name='delconffile'),
                   url(r"/viewconffile/([0-9]+)/([0-9]+)/([0-9]+)",ViewconffileHandler,name='viewconffile'),
                   url(r"/ver/([0-9]+)/([0-9]+)/([0-9]+)",VerHandler,name='ver'),
+                  url(r"/importver/([0-9]+)/([0-9]+)",ImportverHandler,name='importver'),
                   url(r"/newver/([0-9]+)/([0-9]+)",NewverHandler,name='newver'),
                   url(r"/editver/([0-9]+)/([0-9]+)/([0-9]+)",EditverHandler,name='editver'),
                   url(r"/delver/([0-9]+)/([0-9]+)/([0-9]+)",DelverHandler,name='delver'),
