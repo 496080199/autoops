@@ -424,6 +424,7 @@ class DelverHandler(BaseHandler):
         filepath=os.path.join(upload_path,ver.file)
         if os.path.exists(filepath):
             os.remove(filepath)
+        user_cron=CronTab(user=True) 
         iter = user_cron.find_comment('autoops_'+ver.name+'_'+ver_id)
         for job in iter:
             user_cron.remove(job)
