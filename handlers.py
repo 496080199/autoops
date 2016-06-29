@@ -428,7 +428,7 @@ class DelverHandler(BaseHandler):
         for job in iter:
             user_cron.remove(job)
         user_cron.write_to_user(user=True) 
-        timepub=self.session.query(Ver).get(ver_id).timepub
+        timepub=self.session.query(Timepub).filter(Timepub.ver_id==ver_id).one()
         self.session.delete(timepub)
         self.session.commit()
         self.session.delete(ver)
