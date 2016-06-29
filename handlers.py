@@ -355,6 +355,9 @@ class ImportverHandler(BaseHandler):
                 ver=Ver(name=time,major=0,minor=0,revison=0,file=time+".pak",prod_id=prod_id,pub_time=datetime.now(),ch_time=datetime.now())
                 self.session.add(ver)
                 self.session.commit()
+                timepub=Timepub(ver_id=ver.id)
+                self.session.add(timepub)
+                self.session.commit()
             self.redirect("/ver/"+env_id+'/'+prod_id+'/0')
         else:
             self.redirect("/message/3")
